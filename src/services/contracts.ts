@@ -9,6 +9,7 @@ import type {
 import type {
   CatalogFilters,
   CatalogPage,
+  CatalogFacets,
   ProductDetail,
   ProductReview,
 } from "../shared/types/catalog";
@@ -26,6 +27,7 @@ export interface AuthService {
   logout(portal: Portal): Promise<void>;
 }
 export interface CatalogService {
+  categories(): Promise<CatalogFacets["categories"]>;
   featured(): Promise<ProductSummary[]>;
   list(filters: CatalogFilters): Promise<CatalogPage>;
   detail(id: string): Promise<ProductDetail>;

@@ -54,8 +54,15 @@ test("reset confirms, preserves unrelated storage, clears both sessions and rest
 }) => {
   await login(page, "customer");
   await login(page, "admin");
-  await page.goto("/management/demo");
-  await page.evaluate(() => localStorage.setItem("unrelated-key", "keep"));
+  await page.goto("/");
+  await page.evaluate(() => {
+    localStorage.setItem("unrelated-key", "keep");
+    localStorage.setItem("nutee:db:v1", "{bad");
+  });
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Cần khôi phục dữ liệu demo" }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Đặt lại demo", exact: true }).click();
   await page.getByRole("button", { name: "Hủy", exact: true }).click();
   expect(
@@ -63,7 +70,7 @@ test("reset confirms, preserves unrelated storage, clears both sessions and rest
   ).not.toBeNull();
   await page.getByRole("button", { name: "Đặt lại demo", exact: true }).click();
   await page.getByRole("button", { name: "Xác nhận đặt lại" }).click();
-  await expect(page).toHaveURL(/\/management\/login$/);
+  await expect(page).toHaveURL("/");
   expect(await page.evaluate(() => localStorage.getItem("unrelated-key"))).toBe(
     "keep",
   );
@@ -104,9 +111,30 @@ for (const width of [375, 768, 1024, 1440]) {
         () => document.documentElement.scrollWidth <= window.innerWidth,
       ),
     ).toBe(true);
-    if (width < 900) {
-      await page.getByRole("button", { name: "Mở menu cửa hàng" }).click();
-      await page.getByRole("button", { name: "Đóng menu" }).click();
-    }
+    const categories = page.getByRole("button", {
+      name: "Danh mục",
+      exact: true,
+      includeHidden: true,
+    });
+    await categories.click();
+    await expect(categories).toHaveAttribute("aria-expanded", "true");
+    await expect(
+      page.getByRole("menuitem", { name: "Laptop", exact: true }),
+    ).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(categories).toBeFocused();
+    await expect(categories).toHaveAttribute("aria-expanded", "false");
+    await categories.press("Enter");
+    await page.getByRole("menuitem", { name: "Laptop", exact: true }).click();
+    await expect(page).toHaveURL(/category=laptop/);
+    await expect(page.getByRole("status", { name: "Số sản phẩm" })).toHaveText(
+      "11 sản phẩm",
+    );
+    await expect(page.getByRole("menu")).not.toBeVisible();
+    await expect(
+      page
+        .getByRole("banner")
+        .getByRole("link", { name: "Đăng nhập", exact: true }),
+    ).toBeVisible();
   });
 }

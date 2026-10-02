@@ -56,6 +56,15 @@ export function createCatalogService(
   repository: DataRepository,
 ): CatalogService {
   return {
+    async categories() {
+      const db = await repository.read();
+      return db.categories.map((category) => ({
+        ...category,
+        parentId: db.categoryRelations.find(
+          (relation) => relation.childId === category.id,
+        )?.parentId,
+      }));
+    },
     async featured() {
       const db = await repository.read();
       return db.products

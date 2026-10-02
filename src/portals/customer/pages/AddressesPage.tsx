@@ -86,8 +86,12 @@ function AddressEditor({
       aria-labelledby="address-editor-title"
       slotProps={{
         transition: {
-          onEntered: () =>
-            document.getElementById("address-recipient")?.focus(),
+          onEntered: () => {
+            // Initial dialog focus may need moving to the input; preserve focus
+            // if the user already interacted or validation focused the summary.
+            if (document.activeElement?.getAttribute("role") === "dialog")
+              document.getElementById("address-recipient")?.focus();
+          },
         },
       }}
     >

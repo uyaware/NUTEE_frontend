@@ -37,7 +37,7 @@ test("desktop filters stay accessible while browsing and quick prices persist", 
   await expect(page.getByRole("status", { name: "Số sản phẩm" })).toHaveText(
     "29 sản phẩm",
   );
-  await page.evaluate(() => window.scrollTo(0, 600));
+  await page.evaluate(() => window.scrollTo(0, 400));
   const filters = page.getByRole("complementary", { name: "Bộ lọc sản phẩm" });
   const header = page.getByRole("banner");
   await expect

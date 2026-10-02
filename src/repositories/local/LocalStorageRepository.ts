@@ -151,7 +151,7 @@ export class LocalStorageRepository
       if (!parsed?.success)
         throw new ServiceError(
           "CORRUPT_DATA",
-          "Giỏ khách bị lỗi. Dữ liệu vẫn được giữ; có thể đặt lại demo tại trang Demo & dữ liệu.",
+          "Giỏ khách bị lỗi. Dữ liệu vẫn được giữ; xuất bản sao hoặc đặt lại dữ liệu tại đây để khôi phục.",
         );
       if (!db.guestCartMerges.some((m) => m.id === parsed.data.id))
         return parsed.data;

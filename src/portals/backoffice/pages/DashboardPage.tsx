@@ -84,12 +84,12 @@ export default function DashboardPage() {
         </Box>
         <Button
           component={Link}
-          to="/management/demo"
+          to="/management/orders"
           variant="outlined"
           endIcon={<ArrowForwardRounded />}
           sx={{ alignSelf: "flex-start" }}
         >
-          Kiểm tra nền tảng
+          Xem đơn hàng
         </Button>
       </Stack>
       <Alert severity="info">

@@ -19,7 +19,6 @@ import DashboardOutlined from "@mui/icons-material/DashboardOutlined";
 import ReceiptLongOutlined from "@mui/icons-material/ReceiptLongOutlined";
 import Inventory2Outlined from "@mui/icons-material/Inventory2Outlined";
 import PeopleOutlineRounded from "@mui/icons-material/PeopleOutlineRounded";
-import TuneRounded from "@mui/icons-material/TuneRounded";
 import MenuRounded from "@mui/icons-material/MenuRounded";
 import LogoutRounded from "@mui/icons-material/LogoutRounded";
 import ArrowOutwardRounded from "@mui/icons-material/ArrowOutwardRounded";
@@ -55,7 +54,6 @@ export function ManagementLayout() {
           },
         ]
       : []),
-    { to: "/management/demo", label: "Demo & dữ liệu", icon: TuneRounded },
   ];
   const sidebar = (
     <Stack sx={{ height: "100%", p: 2.5 }}>

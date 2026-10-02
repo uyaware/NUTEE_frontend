@@ -105,7 +105,10 @@ const base: ThemeOptions = {
         // the caret in the sticky navbar. Offset content targets instead.
         "#main-content, #main-content :is(a, button, input, textarea, select, [tabindex], [id])":
           {
-            scrollMarginTop: tokens.layout.storefrontHeaderHeight + 16,
+            scrollMarginTop: tokens.layout.storefrontMobileHeaderHeight + 16,
+            "@media (min-width: 900px)": {
+              scrollMarginTop: tokens.layout.storefrontHeaderHeight + 16,
+            },
           },
         "@media (prefers-reduced-motion: reduce)": {
           "*, *::before, *::after": {

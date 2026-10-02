@@ -16,10 +16,6 @@ const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const AddressesPage = lazy(() => import("./pages/AddressesPage"));
 const CartPage = lazy(() => import("./pages/CartPage"));
 const AuthDemoPage = lazy(() => import("./pages/AuthDemoPage"));
-const DemoPage = lazy(() => import("../../shared/components/DemoPage"));
-const DesignSystemPage = lazy(
-  () => import("../../shared/components/DesignSystemPage"),
-);
 export default function CustomerRoutes() {
   return (
     <Routes>
@@ -42,8 +38,6 @@ export default function CustomerRoutes() {
         <Route index element={<HomePage />} />
         <Route path="products" element={<CatalogPage />} />
         <Route path="products/:id" element={<ProductDetailPage />} />
-        <Route path="demo" element={<DemoPage />} />
-        <Route path="design-system" element={<DesignSystemPage />} />
         <Route element={<RequireAuth portal="customer" />}>
           <Route element={<AccountLayout />}>
             <Route

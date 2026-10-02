@@ -22,6 +22,8 @@ import {
 } from "../../../shared/components/Feedback";
 import { money } from "../../../shared/lib/format";
 import { MAX_CART_QUANTITY } from "../../../shared/types/cart";
+import { DataRecovery } from "../../../shared/components/DataRecovery";
+import { ServiceError } from "../../../shared/lib/errors";
 
 const issueLabels = {
   hidden: "Sản phẩm đã ngừng bán",
@@ -49,9 +51,8 @@ export default function CartPage() {
     return (
       <Stack spacing={2}>
         <ErrorState error={cart.error} retry={() => void cart.refetch()} />
-        <Button component={Link} to="/demo">
-          Khôi phục dữ liệu demo
-        </Button>
+        {cart.error instanceof ServiceError &&
+          cart.error.code === "CORRUPT_DATA" && <DataRecovery />}
       </Stack>
     );
   const data = cart.data;

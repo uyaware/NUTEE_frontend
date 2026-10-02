@@ -13,7 +13,6 @@ import { ManagementLayout } from "./layouts/ManagementLayout";
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const ProductsPage = lazy(() => import("./pages/ProductsPage"));
 const UsersPage = lazy(() => import("./pages/UsersPage"));
-const DemoPage = lazy(() => import("../../shared/components/DemoPage"));
 export default function BackofficeRoutes() {
   return (
     <ThemeProvider theme={backofficeTheme}>
@@ -27,7 +26,6 @@ export default function BackofficeRoutes() {
               path="orders/:id"
               element={<OrderDetailPage portal="backoffice" />}
             />
-            <Route path="demo" element={<DemoPage portal="backoffice" />} />
             <Route
               element={
                 <RequireAuth portal="backoffice" permission="products:write" />

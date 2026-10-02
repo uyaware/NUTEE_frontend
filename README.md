@@ -13,7 +13,7 @@ npm.cmd run dev
 
 Sau lần cài đầu tiên, dùng `npm.cmd ci` để cài đúng phiên bản dependencies trong `package-lock.json` trên máy khác hoặc CI.
 
-Mở `http://localhost:5173/` cho customer; `http://localhost:5173/management` cho staff/admin. Chạy cùng server/origin để chia sẻ localStorage. Auth riêng tại `/login` và `/management/login`. `/demo` kiểm tra dữ liệu/reset; `/design-system` preview theme.
+Mở `http://localhost:5173/` cho customer; `http://localhost:5173/management` cho staff/admin. Chạy cùng server/origin để chia sẻ localStorage. Auth riêng tại `/login` và `/management/login`. Header storefront: logo về trang chủ + menu Danh mục bên trái, tìm kiếm ở giữa, giỏ/đăng nhập bên phải. Mobile đưa tìm kiếm xuống hàng thứ hai. Các trang `/demo`, `/management/demo`, `/design-system` đã được bỏ; khôi phục/reset chỉ xuất hiện khi đọc dữ liệu bị lỗi.
 
 Catalog tại `/products`, chi tiết tại `/products/:id`. Tìm theo tên/SKU/hãng/cấu hình; lọc danh mục/hãng/giá/còn hàng/thông số, sắp xếp và phân trang. Bộ lọc nằm trong URL nên reload hoặc chia sẻ link giữ lựa chọn. Mobile dùng Drawer. Gallery/thông số/đánh giá hiện chỉ đọc.
 
@@ -51,11 +51,11 @@ E2E dùng Chrome đã cài (`channel: chrome`) và tự mở Vite port 4173. N�
 2. Admin mở “Sản phẩm demo”, sửa tên/giá/trạng thái một sản phẩm đầu danh sách. Mở storefront ở tab khác cùng origin: thay đổi cập nhật; reload giữ dữ liệu. Đơn cũ giữ snapshot tên/giá.
 3. Login staff, truy cập thẳng `/management/users` hoặc `/management/products`: 403. Customer xem `/account/orders/order-2` bị service từ chối vì thuộc customer khác.
 4. Logout customer: backoffice vẫn đăng nhập. Mở editor trong hai tab admin; save tab thứ nhất rồi tab thứ hai: conflict, không ghi đè dữ liệu mới.
-5. `/demo` → xuất backup nếu cần → “Đặt lại demo” → xác nhận: seed khôi phục, cả hai phiên xóa; keys của ứng dụng khác giữ nguyên.
+5. Nếu đọc DB/giỏ khách gặp lỗi, màn khôi phục cho phép xuất bản sao và “Đặt lại demo” sau xác nhận: seed khôi phục, cả hai phiên xóa; keys của ứng dụng khác giữ nguyên.
 
 Seed 30 products / 6 brands / 12 orders / 4 promotions / 6 after-sales, quan hệ validate khi đọc và ghi. Storage lỗi có màn recovery, giữ raw data, export/retry/reset. Không tự reset dữ liệu khi JSON/schema lỗi hoặc seedVersion đổi.
 
-Seed v2 bổ sung ảnh gallery và RAM/storage/connection mẫu. Dữ liệu seed v1 đã lưu vẫn chạy bình thường, giữ mọi chỉnh sửa. Nếu muốn thử fixtures mới, xuất backup rồi reset qua `/demo`; reset cũng xóa phiên demo. Nghiệm thu M2 xem `docs/m2-acceptance.md`.
+Seed v2 bổ sung ảnh gallery và RAM/storage/connection mẫu. Dữ liệu seed v1 đã lưu vẫn chạy bình thường, giữ mọi chỉnh sửa. Dùng profile trình duyệt mới để thử seed mới mà vẫn giữ dữ liệu demo ở profile hiện tại. Nghiệm thu M2 xem `docs/m2-acceptance.md`.
 
 ## Tổ chức
 

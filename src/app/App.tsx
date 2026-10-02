@@ -15,7 +15,7 @@ import {
   SESSION_KEYS,
 } from "../repositories/local/LocalStorageRepository";
 import { LoadingState } from "../shared/components/Feedback";
-import { ResetDemo } from "../shared/components/DemoPage";
+import { DataRecovery } from "../shared/components/DataRecovery";
 import { errorMessage } from "../shared/lib/errors";
 const CustomerRoutes = lazy(() => import("../portals/customer/routes"));
 const BackofficeRoutes = lazy(() => import("../portals/backoffice/routes"));
@@ -72,9 +72,7 @@ export default function App() {
                   ? "Tài khoản"
                   : location.pathname.includes("orders")
                     ? "Đơn hàng"
-                    : location.pathname.includes("design-system")
-                      ? "Design system"
-                      : "Demo";
+                    : "Cửa hàng";
     if (!location.pathname.startsWith("/products/"))
       document.title = `NUTEE · ${customerTitles[location.pathname] ?? name}`;
     document.getElementById("main-content")?.focus({ preventScroll: true });
@@ -115,7 +113,7 @@ export default function App() {
             <Button onClick={() => void ready.refetch()} variant="outlined">
               Thử đọc lại dữ liệu
             </Button>
-            <ResetDemo recovery />
+            <DataRecovery />
           </Stack>
         </Container>
       ) : (
