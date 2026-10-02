@@ -196,7 +196,8 @@ export default function CatalogPage() {
           display: "grid",
           gridTemplateColumns: {
             xs: "minmax(0, 1fr)",
-            md: `${tokens.layout.filterWidth}px minmax(0, 1fr)`,
+            md: `${tokens.layout.filterTabletWidth}px minmax(0, 1fr)`,
+            lg: `${tokens.layout.filterWidth}px minmax(0, 1fr)`,
           },
           gap: 2,
           alignItems: "start",
@@ -340,7 +341,15 @@ export default function CatalogPage() {
         </Stack>
       </Box>
       <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
-        <Stack sx={{ width: "min(340px, 100vw)", height: "100%" }}>
+        <Stack
+          sx={{
+            width: {
+              xs: "min(360px, 100dvw)",
+              sm: tokens.layout.filterDrawerWidth,
+            },
+            height: "100%",
+          }}
+        >
           <Box
             sx={{
               p: 2,

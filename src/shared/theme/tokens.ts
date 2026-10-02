@@ -16,7 +16,12 @@ export const tokens = {
   },
   radius: { small: 8, medium: 12, large: 24 },
   spacing: { unit: 8, section: 32, gutter: 24 },
-  layout: { storefrontHeaderHeight: 121, filterWidth: 232 },
+  layout: {
+    storefrontHeaderHeight: 121,
+    filterWidth: 280,
+    filterTabletWidth: 264,
+    filterDrawerWidth: 380,
+  },
   typography: {
     family: '"Be Vietnam Pro", system-ui, sans-serif',
     body: ".875rem",

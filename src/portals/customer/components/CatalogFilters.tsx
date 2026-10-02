@@ -86,6 +86,7 @@ function FilterGroup({
           "& .MuiAccordionSummary-content": {
             my: 1,
             alignItems: "center",
+            flexWrap: "wrap",
             gap: 1,
           },
         }}
@@ -129,11 +130,14 @@ export function CatalogFilters({
     )?.id ?? "custom";
   const checkboxStyle = {
     m: 0,
+    width: "100%",
     minHeight: 44,
     alignItems: "center",
-    "& .MuiCheckbox-root": { p: 0.75 },
+    "& .MuiCheckbox-root": { p: 0.75, flexShrink: 0 },
     "& .MuiFormControlLabel-label": {
       typography: "body2",
+      flex: 1,
+      minWidth: 0,
       overflowWrap: "anywhere",
     },
   };
@@ -169,13 +173,7 @@ export function CatalogFilters({
         selectedCount={filters.brands.length}
         defaultExpanded
       >
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: 0.25,
-          }}
-        >
+        <Stack spacing={0.5}>
           {facets.brands.map((b) => (
             <FormControlLabel
               key={b.id}
@@ -191,7 +189,7 @@ export function CatalogFilters({
               label={b.name}
             />
           ))}
-        </Box>
+        </Stack>
         {!facets.brands.length && (
           <Typography variant="body2" color="text.secondary">
             Không có thương hiệu trong danh mục này.
@@ -246,13 +244,7 @@ export function CatalogFilters({
                 <MenuItem value="custom">Khoảng tùy chọn</MenuItem>
               )}
             </TextField>
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                gap: 1,
-              }}
-            >
+            <Stack spacing={1.5}>
               <TextField
                 type="number"
                 name="minPrice"
@@ -271,7 +263,7 @@ export function CatalogFilters({
                   htmlInput: { min: 0, max: Number.MAX_SAFE_INTEGER, step: 1 },
                 }}
               />
-            </Box>
+            </Stack>
             <Button type="submit" variant="outlined" fullWidth>
               Áp dụng khoảng giá
             </Button>
