@@ -114,7 +114,6 @@ export default function ProfileSetupPage() {
           label="Địa chỉ giao hàng"
           id="setup-line"
           autoComplete="street-address"
-          required
           multiline
           minRows={3}
           {...lineField}
@@ -122,7 +121,7 @@ export default function ProfileSetupPage() {
           error={!!errors.line}
           helperText={
             errors.line?.message ??
-            "Nhập số nhà, đường, phường/xã và tỉnh/thành phố."
+            "Không bắt buộc. Bạn có thể thêm địa chỉ sau trong tài khoản."
           }
           slotProps={{ htmlInput: { maxLength: 240 } }}
         />

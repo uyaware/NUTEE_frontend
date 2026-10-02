@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+﻿import { test, expect } from "@playwright/test";
 
 test("home categories and header search lead to the matching products", async ({
   page,
@@ -160,7 +160,7 @@ test("open catalog and detail react to price and visibility changes from managem
   const admin = await context.newPage();
   await admin.goto("/management/login");
   await admin.getByLabel("Email", { exact: true }).fill("admin@nutee.demo");
-  await admin.getByLabel("Mật khẩu demo", { exact: true }).fill("Nutee@123");
+  await admin.getByLabel("Mật khẩu", { exact: true }).fill("12345678");
   await admin.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await admin.goto("/management/products");
   await admin.getByRole("button", { name: "Sửa", exact: true }).first().click();

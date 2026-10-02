@@ -23,9 +23,9 @@ Tài khoản có navigation hồ sơ/địa chỉ/bảo mật/đơn hàng. `/acc
 
 | Role     | Email               | Mật khẩu demo |
 | -------- | ------------------- | ------------- |
-| Customer | customer@nutee.demo | Nutee@123     |
-| Staff    | staff@nutee.demo    | Nutee@123     |
-| Admin    | admin@nutee.demo    | Nutee@123     |
+| Customer | customer@nutee.demo | 12345678      |
+| Staff    | staff@nutee.demo    | 12345678      |
+| Admin    | admin@nutee.demo    | 12345678      |
 
 Customer thứ hai: `customer2@nutee.demo`, cùng mật khẩu; dùng kiểm tra ownership. Phiên mỗi portal 8 giờ. Không dùng thông tin đăng nhập thật.
 

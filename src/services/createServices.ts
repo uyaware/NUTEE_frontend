@@ -17,7 +17,6 @@ import {
   registrationCredentialsSchema,
   profileSetupSchema,
 } from "../shared/types/account";
-import { createPassword, verifyPassword } from "./password";
 
 export function createServices(
   repository: DataRepository & GuestCartRepository,
@@ -94,7 +93,6 @@ export function createServices(
               ]),
             ),
           );
-        const credential = await createPassword(parsed.data.password);
         const db = await repository.read();
         const user: User = {
           id: crypto.randomUUID(),
@@ -113,7 +111,7 @@ export function createServices(
           current.credentials.push({
             id: crypto.randomUUID(),
             userId: user.id,
-            ...credential,
+            password: parsed.data.password,
           });
           current.carts.push({ id: crypto.randomUUID(), userId: user.id });
         });
@@ -126,12 +124,7 @@ export function createServices(
         );
         const credential =
           user && db.credentials.find((c) => c.userId === user.id);
-        if (
-          !user ||
-          !(credential
-            ? await verifyPassword(password, credential)
-            : password === DEMO_PASSWORD)
-        )
+        if (!user || password !== (credential?.password ?? DEMO_PASSWORD))
           throw new ServiceError(
             "VALIDATION",
             "Email hoặc mật khẩu không đúng.",
@@ -197,20 +190,23 @@ export function createServices(
               "Hồ sơ đã được hoàn thiện. Tải lại để tiếp tục.",
             );
           user.name = parsed.data.name;
+          user.phone = parsed.data.phone;
           user.profileCompleted = true;
-          db.addresses
-            .filter((a) => a.userId === user.id)
-            .forEach((a) => {
-              a.isDefault = false;
+          if (parsed.data.line) {
+            db.addresses
+              .filter((a) => a.userId === user.id)
+              .forEach((a) => {
+                a.isDefault = false;
+              });
+            db.addresses.push({
+              id: crypto.randomUUID(),
+              userId: user.id,
+              recipient: user.name,
+              phone: parsed.data.phone,
+              line: parsed.data.line,
+              isDefault: true,
             });
-          db.addresses.push({
-            id: crypto.randomUUID(),
-            userId: user.id,
-            recipient: user.name,
-            phone: parsed.data.phone,
-            line: parsed.data.line,
-            isDefault: true,
-          });
+          }
         });
         return updated.users.find((user) => user.id === ownerId)!;
       },

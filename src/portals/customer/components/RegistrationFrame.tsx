@@ -32,7 +32,7 @@ export function RegistrationFrame({
         <Typography color="text.secondary">
           {step === 0
             ? "Bắt đầu với email và mật khẩu của bạn."
-            : "Thêm tên và địa chỉ giao hàng để hoàn tất đăng ký."}
+            : "Thêm tên và số điện thoại để hoàn tất đăng ký. Địa chỉ giao hàng có thể bổ sung sau."}
         </Typography>
       </Stack>
       <Paper variant="outlined" sx={{ p: { xs: 2.5, sm: 4 } }}>

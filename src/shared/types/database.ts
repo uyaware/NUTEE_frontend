@@ -33,6 +33,7 @@ export const userSchema = z.object({
   email: z.email(),
   name: z.string().max(80),
   profileCompleted: z.boolean().optional(),
+  phone: z.string().optional(),
   role: roleSchema,
   isActive: z.boolean(),
 });
@@ -84,9 +85,8 @@ export const databaseSchema = z
         z.object({
           id,
           userId: id,
-          salt: z.string().regex(/^[a-f0-9]{32}$/),
-          hash: z.string().regex(/^[a-f0-9]{64}$/),
-          iterations: z.number().int().min(210000),
+          // Older local credentials without plaintext use the demo password.
+          password: z.string().min(8).max(128).default("12345678"),
         }),
       )
       .default([]),

@@ -1,6 +1,6 @@
 import type { Database, Order, Product } from "../../shared/types/database";
 
-export const DEMO_PASSWORD = "Nutee@123";
+export const DEMO_PASSWORD = "12345678";
 export const DEMO_ACCOUNTS = [
   { email: "customer@nutee.demo", role: "customer", label: "Khách hàng" },
   { email: "staff@nutee.demo", role: "staff", label: "Nhân viên" },
@@ -15,7 +15,13 @@ export function createSeed(now = new Date()): Database {
     seedVersion: 2,
     revision: 0,
     seededAt: at(0),
-    credentials: [],
+    credentials: ["customer-1", "customer-2", "staff-1", "admin-1"].map(
+      (userId) => ({
+        id: `credential-${userId}`,
+        userId,
+        password: DEMO_PASSWORD,
+      }),
+    ),
     users: [
       {
         id: "customer-1",

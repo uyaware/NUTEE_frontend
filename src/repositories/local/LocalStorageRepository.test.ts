@@ -16,6 +16,12 @@ describe("seed consistency", () => {
     expect(seed.products).toHaveLength(30);
     expect(seed.brands).toHaveLength(6);
     expect(seed.users).toHaveLength(4);
+    expect(seed.credentials).toHaveLength(seed.users.length);
+    expect(
+      seed.credentials.every(
+        (credential) => credential.password === "12345678",
+      ),
+    ).toBe(true);
     expect(seed.orders).toHaveLength(12);
     expect(seed.promotions).toHaveLength(4);
     expect(seed.afterSaleRequests).toHaveLength(6);

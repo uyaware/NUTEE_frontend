@@ -8,7 +8,7 @@ async function login(
 ) {
   await page.goto(`/login?${new URLSearchParams({ returnTo })}`);
   await page.getByLabel("Email", { exact: true }).fill(email);
-  await page.getByLabel("Mật khẩu", { exact: true }).fill("Nutee@123");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("12345678");
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`${returnTo}$`));
 }
@@ -37,7 +37,7 @@ test("guest cart persists, login merges once, quantity/remove persist, logout an
   ).toHaveText("2");
   await page.getByRole("link", { name: "Đăng nhập và gộp giỏ" }).click();
   await page.getByLabel("Email", { exact: true }).fill("customer@nutee.demo");
-  await page.getByLabel("Mật khẩu", { exact: true }).fill("Nutee@123");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("12345678");
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(page).toHaveURL(/\/cart$/);
   await expect(
@@ -100,7 +100,7 @@ test("guest mutations invalidate another tab, and admin price/hide changes reval
   const admin = await context.newPage();
   await admin.goto("/management/login");
   await admin.getByLabel("Email", { exact: true }).fill("admin@nutee.demo");
-  await admin.getByLabel("Mật khẩu", { exact: true }).fill("Nutee@123");
+  await admin.getByLabel("Mật khẩu", { exact: true }).fill("12345678");
   await admin.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(admin).toHaveURL(/\/management$/);
   await admin.goto("/management/products");
@@ -283,7 +283,7 @@ test("registration validates passwords, requires profile completion, preserves c
   await page.getByRole("button", { name: "Đăng xuất cửa hàng" }).click();
   await page.goto("/login?returnTo=%2Fcart");
   await page.getByLabel("Email", { exact: true }).fill("new@nutee.demo");
-  await page.getByLabel("Mật khẩu", { exact: true }).fill("Nutee@123");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("12345678");
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText(
     "Email hoặc mật khẩu không đúng",
@@ -380,7 +380,7 @@ for (const width of [375, 768, 1024, 1440]) {
   });
 }
 
-test("unfinished registration resumes after logout and login without creating another account", async ({
+test("unfinished registration resumes after login and completes without a shipping address", async ({
   page,
 }) => {
   await page.goto("/register");
@@ -405,12 +405,24 @@ test("unfinished registration resumes after logout and login without creating an
   );
   await page.getByLabel("Họ và tên").fill("Khách mới");
   await page.getByLabel("Số điện thoại").fill("0912345678");
-  await page
-    .getByLabel("Địa chỉ giao hàng")
-    .fill("123 Đường Mẫu, TP. Hồ Chí Minh");
+  await expect(page.getByLabel("Địa chỉ giao hàng")).not.toHaveAttribute(
+    "required",
+  );
   await page.getByRole("button", { name: "Hoàn tất đăng ký" }).click();
   await expect(page).toHaveURL(/\/account\/orders$/);
   await expect(
     page.getByRole("heading", { name: "Chưa có đơn hàng" }),
+  ).toBeVisible();
+  await page
+    .getByRole("navigation", { name: "Tài khoản khách hàng" })
+    .getByRole("link", { name: "Hồ sơ", exact: true })
+    .click();
+  await expect(page.getByLabel("Số điện thoại")).toHaveValue("0912345678");
+  await page
+    .getByRole("navigation", { name: "Tài khoản khách hàng" })
+    .getByRole("link", { name: "Địa chỉ", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Chưa có địa chỉ" }),
   ).toBeVisible();
 });

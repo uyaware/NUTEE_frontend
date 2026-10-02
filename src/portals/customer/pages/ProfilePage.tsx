@@ -82,6 +82,16 @@ export default function ProfilePage() {
             slotProps={{ input: { readOnly: true } }}
             helperText="Email được sử dụng để đăng nhập."
           />
+          <TextField
+            label="Số điện thoại"
+            value={
+              profile.data.user.phone ??
+              profile.data.addresses.find((address) => address.isDefault)
+                ?.phone ??
+              ""
+            }
+            slotProps={{ input: { readOnly: true } }}
+          />
           {save.isError && (
             <Alert severity="error">
               {errorMessage(save.error)}

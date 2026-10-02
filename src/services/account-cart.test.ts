@@ -192,7 +192,7 @@ describe("M3 account and cart", () => {
     expect(storage.getItem(GUEST_CART_KEY)).toBe(raw);
     expect((await services.cart.get()).ownerId).toBeNull();
   });
-  it("registers a customer with their own hashed password, logs in and merges the guest cart once", async () => {
+  it("registers a customer with their own plaintext frontend password, logs in and merges the guest cart once", async () => {
     await services.cart.add("product-1", 2);
     const password = "Personal@456";
     const user = await services.auth.register(" NEW@NUTEE.DEMO ", password);
@@ -218,8 +218,13 @@ describe("M3 account and cart", () => {
     });
     expect(user).not.toHaveProperty("password");
     expect(user).not.toHaveProperty("hash");
-    expect(storage.getItem(DB_KEY)).not.toContain(password);
-    expect(storage.getItem(DB_KEY)).not.toContain(DEMO_PASSWORD);
+    expect(
+      (await repository.read()).credentials.find(
+        (credential) => credential.userId === user.id,
+      ),
+    ).toMatchObject({ password });
+    expect(storage.getItem(DB_KEY)).not.toContain('"hash"');
+    expect(storage.getItem(DB_KEY)).not.toContain('"salt"');
     await services.auth.logout("customer");
     await expect(login(user.email)).rejects.toMatchObject({
       code: "VALIDATION",
@@ -246,6 +251,30 @@ describe("M3 account and cart", () => {
     expect((await repository.read()).users).toHaveLength(4);
     expect(await services.auth.currentUser("customer")).toBeNull();
   });
+  it.each(["", "   ", undefined])(
+    "completes a profile without shipping address %s and keeps the phone number",
+    async (line) => {
+      const user = await services.auth.register(
+        "no-address@nutee.demo",
+        "12345678",
+      );
+      const profile = await services.profile.get();
+      const completed = await services.profile.completeProfile(
+        { name: "Khách mới", phone: address.phone, line },
+        profile.revision,
+      );
+      expect(completed).toMatchObject({
+        id: user.id,
+        name: "Khách mới",
+        phone: address.phone,
+        profileCompleted: true,
+      });
+      expect((await services.profile.get()).addresses).toEqual([]);
+      expect(
+        (await services.auth.currentUser("customer"))?.profileCompleted,
+      ).toBe(true);
+    },
+  );
   it("completes name and default address together, preserving incomplete state on invalid input or stale revision", async () => {
     const user = await services.auth.register("new@nutee.demo", "Personal@456");
     const profile = await services.profile.get();

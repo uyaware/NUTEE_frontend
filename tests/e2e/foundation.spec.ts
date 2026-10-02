@@ -1,9 +1,9 @@
-import { test, expect } from "@playwright/test";
+﻿import { test, expect } from "@playwright/test";
 import type { Page } from "@playwright/test";
 async function login(page: Page, role: "customer" | "staff" | "admin") {
   await page.goto(role === "customer" ? "/login" : "/management/login");
   await page.getByLabel("Email", { exact: true }).fill(`${role}@nutee.demo`);
-  await page.getByLabel("Mật khẩu demo", { exact: true }).fill("Nutee@123");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("12345678");
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(page).toHaveURL(
     role === "customer" ? /\/account\/profile$/ : /\/management$/,

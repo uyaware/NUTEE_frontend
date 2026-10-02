@@ -45,6 +45,13 @@ export const addressInputSchema = z.object({
 });
 export type AddressInput = z.infer<typeof addressInputSchema>;
 export const profileSetupSchema = addressInputSchema
-  .pick({ phone: true, line: true })
-  .extend({ name: nameSchema });
+  .pick({ phone: true })
+  .extend({
+    name: nameSchema,
+    line: z
+      .string()
+      .trim()
+      .pipe(z.union([z.literal(""), addressInputSchema.shape.line]))
+      .optional(),
+  });
 export type ProfileSetupInput = z.infer<typeof profileSetupSchema>;
