@@ -6,6 +6,12 @@ import type {
   ProductSummary,
   User,
 } from "../shared/types/database";
+import type {
+  CatalogFilters,
+  CatalogPage,
+  ProductDetail,
+  ProductReview,
+} from "../shared/types/catalog";
 
 export interface AuthService {
   login(portal: Portal, email: string, password: string): Promise<User>;
@@ -14,6 +20,9 @@ export interface AuthService {
 }
 export interface CatalogService {
   featured(): Promise<ProductSummary[]>;
+  list(filters: CatalogFilters): Promise<CatalogPage>;
+  detail(id: string): Promise<ProductDetail>;
+  reviews(id: string, page?: number): Promise<Page<ProductReview>>;
 }
 export interface ProfileService {
   get(): Promise<{

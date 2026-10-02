@@ -1,4 +1,4 @@
-# NUTEE frontend — nền tảng M0–M1
+# NUTEE frontend — M0–M2
 
 React + Vite + TypeScript strict, Material UI/MUI Icons, TanStack Query, React Hook Form/Zod. Giao diện tiếng Việt, VND; palette xanh/than theo `public/logo_nutee.png`.
 
@@ -14,6 +14,8 @@ npm.cmd run dev
 Sau lần cài đầu tiên, dùng `npm.cmd ci` để cài đúng phiên bản dependencies trong `package-lock.json` trên máy khác hoặc CI.
 
 Mở `http://localhost:5173/` cho customer; `http://localhost:5173/management` cho staff/admin. Chạy cùng server/origin để chia sẻ localStorage. Auth riêng tại `/login` và `/management/login`. `/demo` kiểm tra dữ liệu/reset; `/design-system` preview theme.
+
+Catalog tại `/products`, chi tiết tại `/products/:id`. Tìm theo tên/SKU/hãng/cấu hình; lọc danh mục/hãng/giá/còn hàng/thông số, sắp xếp và phân trang. Bộ lọc nằm trong URL nên reload hoặc chia sẻ link giữ lựa chọn. Mobile dùng Drawer. Gallery/thông số/đánh giá hiện chỉ đọc; giỏ và đặt hàng thuộc M3–M4.
 
 | Role     | Email               | Mật khẩu demo |
 | -------- | ------------------- | ------------- |
@@ -49,6 +51,8 @@ E2E dùng Chrome đã cài (`channel: chrome`) và tự mở Vite port 4173. N�
 
 Seed 30 products / 6 brands / 12 orders / 4 promotions / 6 after-sales, quan hệ validate khi đọc và ghi. Storage lỗi có màn recovery, giữ raw data, export/retry/reset. Không tự reset dữ liệu khi JSON/schema lỗi hoặc seedVersion đổi.
 
+Seed v2 bổ sung ảnh gallery và RAM/storage/connection mẫu. Dữ liệu seed v1 đã lưu vẫn chạy bình thường, giữ mọi chỉnh sửa. Nếu muốn thử fixtures mới, xuất backup rồi reset qua `/demo`; reset cũng xóa phiên demo. Nghiệm thu M2 xem `docs/m2-acceptance.md`.
+
 ## Tổ chức
 
 - `src/app`: providers/root routing, storage cache invalidation.
@@ -59,4 +63,4 @@ Seed 30 products / 6 brands / 12 orders / 4 promotions / 6 after-sales, quan h�
 - `src/mocks`: relational seed và test utilities.
 - `design-system/nutee`: master + catalog/dashboard/checkout overrides.
 
-M1 gồm shell, login/session, guards, seed/persistence/recovery/reset và preview dữ liệu. Profile mutation/product editor là luồng nhỏ để kiểm chứng nền tảng. Catalog đầy đủ, cart, checkout, payment, workflow staff và CRUD admin đầy đủ thuộc M2–M6. API thật/M8 chưa triển khai.
+M1 gồm shell, login/session, guards, seed/persistence/recovery/reset và preview dữ liệu. Profile mutation/product editor là luồng nhỏ để kiểm chứng nền tảng. M2 bổ sung catalog/search/filter/detail/gallery/specs/reviews read. Cart, checkout, payment, workflow staff và CRUD admin đầy đủ thuộc M3–M6. API thật/M8 chưa triển khai.

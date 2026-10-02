@@ -3,7 +3,8 @@ import type {
   DataRepository,
   SessionRepository,
 } from "../repositories/contracts";
-import type { Database, Portal, Product, User } from "../shared/types/database";
+import type { Database, Portal, User } from "../shared/types/database";
+import { createCatalogService, productSummary } from "./catalog";
 import { belongsToPortal, hasPermission } from "../shared/auth/permissions";
 import type { Permission } from "../shared/auth/permissions";
 import { ServiceError } from "../shared/lib/errors";
@@ -55,14 +56,6 @@ export function createServices(
       );
     return user;
   }
-  const summary = (db: Database, p: Product) => ({
-    ...p,
-    brandName: db.brands.find((b) => b.id === p.brandId)?.name ?? "",
-    imageUrl:
-      db.productImages
-        .filter((i) => i.productId === p.id)
-        .sort((a, b) => a.position - b.position)[0]?.url ?? "",
-  });
   return {
     auth: {
       async login(portal, email, password) {
@@ -106,15 +99,7 @@ export function createServices(
         sessions.remove(portal);
       },
     },
-    catalog: {
-      async featured() {
-        const db = await repository.read();
-        return db.products
-          .filter((p) => p.status === "published")
-          .slice(0, 8)
-          .map((p) => summary(db, p));
-      },
-    },
+    catalog: createCatalogService(repository),
     profile: {
       async get() {
         const db = await repository.read();
@@ -194,7 +179,7 @@ export function createServices(
         const db = await repository.read();
         await actor(db, "backoffice", "products:write");
         return {
-          items: db.products.map((p) => summary(db, p)),
+          items: db.products.map((p) => productSummary(db, p)),
           revision: db.revision,
         };
       },

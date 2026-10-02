@@ -55,14 +55,19 @@ export default function App() {
           ? "Đăng nhập"
           : location.pathname.startsWith("/management")
             ? "Workspace"
-            : location.pathname.includes("profile")
-              ? "Tài khoản"
-              : location.pathname.includes("orders")
-                ? "Đơn hàng"
-                : location.pathname.includes("design-system")
-                  ? "Design system"
-                  : "Demo";
-    document.title = `NUTEE · ${name}`;
+            : location.pathname === "/products"
+              ? "Sản phẩm"
+              : location.pathname.startsWith("/products/")
+                ? "Chi tiết sản phẩm"
+                : location.pathname.includes("profile")
+                  ? "Tài khoản"
+                  : location.pathname.includes("orders")
+                    ? "Đơn hàng"
+                    : location.pathname.includes("design-system")
+                      ? "Design system"
+                      : "Demo";
+    if (!location.pathname.startsWith("/products/"))
+      document.title = `NUTEE · ${name}`;
     document.getElementById("main-content")?.focus({ preventScroll: true });
     window.scrollTo(0, 0);
   }, [location.pathname]);

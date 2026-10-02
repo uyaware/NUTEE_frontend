@@ -1,8 +1,7 @@
 import {
   Box,
   Button,
-  Card,
-  CardContent,
+  CardActionArea,
   Chip,
   Paper,
   Stack,
@@ -12,11 +11,10 @@ import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
 import LaptopMacRounded from "@mui/icons-material/LaptopMacRounded";
 import SmartphoneRounded from "@mui/icons-material/SmartphoneRounded";
 import KeyboardRounded from "@mui/icons-material/KeyboardRounded";
-import CheckCircleOutlineRounded from "@mui/icons-material/CheckCircleOutlineRounded";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { services } from "../../../services";
-import { money } from "../../../shared/lib/format";
+import { ProductCard } from "../components/ProductCard";
 import {
   EmptyState,
   ErrorState,
@@ -65,10 +63,10 @@ export default function HomePage() {
           <Button
             variant="contained"
             component={Link}
-            to="/demo"
+            to="/products"
             endIcon={<ArrowForwardRounded />}
           >
-            Khám phá bản demo
+            Khám phá sản phẩm
           </Button>
           <Typography
             variant="caption"
@@ -76,7 +74,7 @@ export default function HomePage() {
             sx={{ mt: 2 }}
             color="text.secondary"
           >
-            Nền tảng M0–M1 · Sản phẩm và giá là dữ liệu mẫu
+            Sản phẩm và giá là dữ liệu mẫu
           </Typography>
         </Box>
         <Box
@@ -138,41 +136,52 @@ export default function HomePage() {
           {
             icon: LaptopMacRounded,
             title: "Laptop",
+            category: "laptop",
             desc: "Làm việc & sáng tạo",
           },
           {
             icon: SmartphoneRounded,
             title: "Điện thoại",
+            category: "smartphone",
             desc: "Kết nối mỗi ngày",
           },
           {
             icon: KeyboardRounded,
             title: "Bàn phím",
+            category: "keyboard",
             desc: "Hoàn thiện góc làm việc",
           },
-        ].map(({ icon: Icon, title, desc }) => (
-          <Paper
-            key={title}
-            variant="outlined"
-            sx={{ p: 2.5, display: "flex", alignItems: "center", gap: 2 }}
-          >
-            <Box
+        ].map(({ icon: Icon, title, desc, category }) => (
+          <Paper key={title} variant="outlined" sx={{ overflow: "hidden" }}>
+            <CardActionArea
+              component={Link}
+              to={`/products?category=${category}`}
               sx={{
-                p: 1.5,
-                bgcolor: tokens.color.blueTint,
-                borderRadius: 2,
-                color: "primary.main",
+                p: 2.5,
                 display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-start",
+                gap: 2,
               }}
             >
-              <Icon />
-            </Box>
-            <Box>
-              <Typography fontWeight={600}>{title}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                {desc}
-              </Typography>
-            </Box>
+              <Box
+                sx={{
+                  p: 1.5,
+                  bgcolor: tokens.color.blueTint,
+                  borderRadius: 2,
+                  color: "primary.main",
+                  display: "flex",
+                }}
+              >
+                <Icon />
+              </Box>
+              <Box>
+                <Typography fontWeight={600}>{title}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {desc}
+                </Typography>
+              </Box>
+            </CardActionArea>
           </Paper>
         ))}
       </Box>
@@ -190,7 +199,13 @@ export default function HomePage() {
             </Typography>
             <Typography variant="h2">Một góc công nghệ</Typography>
           </Box>
-          <Chip label="Preview dữ liệu seed" variant="outlined" size="small" />
+          <Button
+            component={Link}
+            to="/products"
+            endIcon={<ArrowForwardRounded />}
+          >
+            Xem tất cả sản phẩm
+          </Button>
         </Stack>
         {products.isPending ? (
           <LoadingState />
@@ -217,57 +232,7 @@ export default function HomePage() {
             }}
           >
             {products.data.map((p) => (
-              <Card key={p.id}>
-                <Box
-                  sx={{
-                    bgcolor: "background.default",
-                    p: 3,
-                    height: 190,
-                    display: "flex",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src={p.imageUrl}
-                    alt={`Minh họa ${p.name}`}
-                    loading="lazy"
-                    sx={{ width: "100%", height: "100%", objectFit: "contain" }}
-                  />
-                </Box>
-                <CardContent>
-                  <Typography variant="caption" color="text.secondary">
-                    {p.brandName} · {p.sku}
-                  </Typography>
-                  <Typography
-                    component="h3"
-                    variant="h4"
-                    sx={{ mt: 1, minHeight: 50 }}
-                  >
-                    {p.name}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mt: 1 }}
-                  >
-                    {p.specifications[0]?.value}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      mt: 2,
-                      fontWeight: 700,
-                      color: "primary.main",
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                  >
-                    {money(p.price)}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {p.stock ? `Còn ${p.stock} sản phẩm mẫu` : "Hết hàng"}
-                  </Typography>
-                </CardContent>
-              </Card>
+              <ProductCard key={p.id} product={p} />
             ))}
           </Box>
         )}
@@ -281,14 +246,14 @@ export default function HomePage() {
           alignItems: "flex-start",
         }}
       >
-        <CheckCircleOutlineRounded color="primary" />
+        <LaptopMacRounded color="primary" />
         <Box>
           <Typography variant="h3" component="h2">
-            Hai portal. Một nguồn dữ liệu.
+            Chọn công nghệ theo cách của bạn.
           </Typography>
           <Typography color="text.secondary" sx={{ mt: 1 }}>
-            Đăng nhập khách hàng hoặc mở cổng vận hành để kiểm chứng phiên
-            riêng, phân quyền và persistence trong cùng trình duyệt.
+            Tìm theo thương hiệu, khoảng giá và cấu hình. Xem thông số cùng đánh
+            giá để chọn sản phẩm phù hợp.
           </Typography>
         </Box>
       </Paper>

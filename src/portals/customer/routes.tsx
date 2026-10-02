@@ -9,6 +9,8 @@ import {
 } from "../../shared/components/OrdersPage";
 import { SystemPage } from "../../shared/components/SystemPage";
 const HomePage = lazy(() => import("./pages/HomePage"));
+const CatalogPage = lazy(() => import("./pages/CatalogPage"));
+const ProductDetailPage = lazy(() => import("./pages/ProductDetailPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const DemoPage = lazy(() => import("../../shared/components/DemoPage"));
 const DesignSystemPage = lazy(
@@ -20,6 +22,8 @@ export default function CustomerRoutes() {
       <Route path="login" element={<LoginPage portal="customer" />} />
       <Route element={<StorefrontLayout />}>
         <Route index element={<HomePage />} />
+        <Route path="products" element={<CatalogPage />} />
+        <Route path="products/:id" element={<ProductDetailPage />} />
         <Route path="demo" element={<DemoPage />} />
         <Route path="design-system" element={<DesignSystemPage />} />
         <Route element={<RequireAuth portal="customer" />}>

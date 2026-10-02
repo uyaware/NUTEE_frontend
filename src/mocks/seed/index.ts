@@ -12,7 +12,7 @@ export function createSeed(now = new Date()): Database {
     new Date(now.getTime() + days * 86400000).toISOString();
   const db: Database = {
     schemaVersion: 1,
-    seedVersion: 1,
+    seedVersion: 2,
     revision: 0,
     seededAt: at(0),
     users: [
@@ -170,6 +170,24 @@ export function createSeed(now = new Date()): Database {
       status: i === 29 ? "hidden" : "published",
       specifications: [
         { key: "configuration", label: "Cấu hình", value: config },
+        ...(kind === "laptop"
+          ? [
+              { key: "ram", label: "RAM", value: "16GB" },
+              {
+                key: "storage",
+                label: "Lưu trữ",
+                value: config.includes("256GB") ? "256GB" : "512GB",
+              },
+            ]
+          : kind === "smartphone"
+            ? [
+                {
+                  key: "storage",
+                  label: "Lưu trữ",
+                  value: config.includes("256GB") ? "256GB" : "128GB",
+                },
+              ]
+            : [{ key: "connection", label: "Kết nối", value: "Wireless" }]),
       ],
       updatedAt: at(0),
     });
@@ -179,6 +197,13 @@ export function createSeed(now = new Date()): Database {
       url: `/images/${kind}.svg`,
       alt: `Minh họa ${name}`,
       position: 0,
+    });
+    db.productImages.push({
+      id: `image-${i + 1}-overview`,
+      productId,
+      url: `/images/${kind}-overview.svg`,
+      alt: `Góc nhìn tổng quan ${name} (minh họa)`,
+      position: 1,
     });
     db.productCategories.push({
       id: `pc-${i + 1}`,

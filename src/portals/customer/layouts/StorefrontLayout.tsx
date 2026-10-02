@@ -10,18 +10,29 @@ import {
   IconButton,
   Stack,
   Toolbar,
+  TextField,
   Typography,
 } from "@mui/material";
 import MenuRounded from "@mui/icons-material/MenuRounded";
 import PersonOutlineRounded from "@mui/icons-material/PersonOutlineRounded";
 import ArrowOutwardRounded from "@mui/icons-material/ArrowOutwardRounded";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import SearchRounded from "@mui/icons-material/SearchRounded";
+import {
+  Link,
+  NavLink,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { Brand } from "../../../shared/components/Brand";
 import { useLogout, useSession } from "../../../shared/auth/useSession";
 import { ErrorState } from "../../../shared/components/Feedback";
 
 export function StorefrontLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const search = new URLSearchParams(location.search).get("q") ?? "";
   const session = useSession("customer");
   const logout = useLogout("customer");
   const nav = (
@@ -31,6 +42,9 @@ export function StorefrontLayout() {
       </Button>
       <Button component={NavLink} to="/design-system">
         Design system
+      </Button>
+      <Button component={NavLink} to="/products">
+        Sản phẩm
       </Button>
       <Button component={NavLink} to="/demo">
         Demo & dữ liệu
@@ -48,7 +62,7 @@ export function StorefrontLayout() {
       >
         <Container maxWidth="xl">
           <Typography variant="caption">
-            NUTEE Demo · Dữ liệu mẫu trong trình duyệt · M0–M1
+            NUTEE Demo · Sản phẩm và giá là dữ liệu mẫu
           </Typography>
         </Container>
       </Box>
@@ -95,6 +109,31 @@ export function StorefrontLayout() {
               </IconButton>
             </Stack>
           </Toolbar>
+          <Box
+            component="form"
+            key={search}
+            role="search"
+            aria-label="Tìm sản phẩm toàn cửa hàng"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const q = String(
+                new FormData(event.currentTarget).get("q") ?? "",
+              ).trim();
+              navigate(`/products${q ? `?${new URLSearchParams({ q })}` : ""}`);
+            }}
+            sx={{ display: "flex", gap: 1, pb: 2 }}
+          >
+            <TextField
+              name="q"
+              label="Tìm sản phẩm"
+              defaultValue={search}
+              size="small"
+              slotProps={{ htmlInput: { maxLength: 160 } }}
+            />
+            <IconButton type="submit" aria-label="Tìm sản phẩm" color="primary">
+              <SearchRounded />
+            </IconButton>
+          </Box>
         </Container>
       </AppBar>
       <Drawer anchor="right" open={menuOpen} onClose={() => setMenuOpen(false)}>
@@ -161,8 +200,8 @@ export function StorefrontLayout() {
           </Stack>
           <Divider sx={{ my: 3 }} />
           <Typography variant="caption" color="text.secondary">
-            © {new Date().getFullYear()} NUTEE. Bản nền tảng — danh mục và mua
-            hàng sẽ được triển khai ở M2–M4.
+            © {new Date().getFullYear()} NUTEE. Khám phá danh mục công nghệ
+            trong bản demo.
           </Typography>
         </Container>
       </Box>
