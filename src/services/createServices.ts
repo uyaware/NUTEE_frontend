@@ -2,6 +2,7 @@ import { z } from "zod";
 import type {
   DataRepository,
   SessionRepository,
+  GuestCartRepository,
 } from "../repositories/contracts";
 import type { Database, Portal, User } from "../shared/types/database";
 import { createCatalogService, productSummary } from "./catalog";
@@ -10,9 +11,14 @@ import type { Permission } from "../shared/auth/permissions";
 import { ServiceError } from "../shared/lib/errors";
 import { DEMO_PASSWORD } from "../mocks/seed";
 import type { Services } from "./contracts";
+import { createCartService, mergeGuestItems } from "./cart";
+import {
+  addressInputSchema,
+  registrationSchema,
+} from "../shared/types/account";
 
 export function createServices(
-  repository: DataRepository,
+  repository: DataRepository & GuestCartRepository,
   sessions: SessionRepository,
 ): Services {
   async function actor(
@@ -58,6 +64,32 @@ export function createServices(
   }
   return {
     auth: {
+      async register(name, email) {
+        const parsed = registrationSchema.safeParse({ name, email });
+        if (!parsed.success)
+          throw new ServiceError(
+            "VALIDATION",
+            "Kiểm tra tên và email đăng ký.",
+          );
+        const db = await repository.read();
+        const user: User = {
+          id: crypto.randomUUID(),
+          ...parsed.data,
+          role: "customer",
+          isActive: true,
+        };
+        await repository.update(db.revision, (current) => {
+          if (current.users.some((u) => u.email.toLowerCase() === user.email))
+            throw new ServiceError(
+              "VALIDATION",
+              "Email đã được dùng trong bản demo.",
+              { email: "Email đã được dùng." },
+            );
+          current.users.push(user);
+          current.carts.push({ id: crypto.randomUUID(), userId: user.id });
+        });
+        return user;
+      },
       async login(portal, email, password) {
         const db = await repository.read();
         const user = db.users.find(
@@ -76,11 +108,16 @@ export function createServices(
               ? "Portal cửa hàng chỉ dành cho tài khoản customer."
               : "Portal vận hành chỉ dành cho staff hoặc admin.",
           );
+        let cartMergeNotices: string[] = [];
+        if (portal === "customer")
+          await repository.mergeGuest(user.id, (current, guest) => {
+            cartMergeNotices = mergeGuestItems(current, guest, user.id);
+          });
         sessions.set(portal, {
           userId: user.id,
           expiresAt: Date.now() + 8 * 3600000,
         });
-        return user;
+        return { ...user, cartMergeNotices };
       },
       async currentUser(portal) {
         const db = await repository.read();
@@ -100,6 +137,11 @@ export function createServices(
       },
     },
     catalog: createCatalogService(repository),
+    cart: createCartService(repository, (db) =>
+      sessions.get("customer")
+        ? requireActor(db, "customer", "profile:own")
+        : null,
+    ),
     profile: {
       async get() {
         const db = await repository.read();
@@ -111,6 +153,7 @@ export function createServices(
         };
       },
       async updateName(name, expectedRevision) {
+        const ownerId = sessions.get("customer")?.userId;
         const parsed = z.string().trim().min(2).max(80).safeParse(name);
         if (!parsed.success)
           throw new ServiceError("VALIDATION", "Tên cần từ 2 đến 80 ký tự.", {
@@ -118,7 +161,88 @@ export function createServices(
           });
         await repository.update(expectedRevision, (db) => {
           const user = requireActor(db, "customer", "profile:own");
+          if (user.id !== ownerId)
+            throw new ServiceError(
+              "CONFLICT",
+              "Phiên khách hàng đã thay đổi. Tải lại hồ sơ trước khi lưu.",
+            );
           user.name = parsed.data;
+        });
+      },
+      async saveAddress(id, input, expectedRevision) {
+        const ownerId = sessions.get("customer")?.userId;
+        const parsed = addressInputSchema.safeParse(input);
+        if (!parsed.success)
+          throw new ServiceError(
+            "VALIDATION",
+            "Kiểm tra người nhận, số điện thoại và địa chỉ.",
+            Object.fromEntries(
+              parsed.error.issues.map((i) => [String(i.path[0]), i.message]),
+            ),
+          );
+        await repository.update(expectedRevision, (db) => {
+          const user = requireActor(db, "customer", "profile:own");
+          if (user.id !== ownerId)
+            throw new ServiceError(
+              "CONFLICT",
+              "Phiên khách hàng đã thay đổi. Tải lại địa chỉ trước khi lưu.",
+            );
+          const owned = db.addresses.filter((a) => a.userId === user.id);
+          const address = id ? owned.find((a) => a.id === id) : undefined;
+          if (id && !address)
+            throw new ServiceError(
+              "NOT_FOUND",
+              "Không tìm thấy địa chỉ của bạn.",
+            );
+          const isDefault =
+            !owned.some((a) => a.isDefault) ||
+            parsed.data.isDefault ||
+            (address?.isDefault ?? false);
+          if (isDefault)
+            owned.forEach((a) => {
+              a.isDefault = false;
+            });
+          if (address) Object.assign(address, parsed.data, { isDefault });
+          else
+            db.addresses.push({
+              id: crypto.randomUUID(),
+              userId: user.id,
+              ...parsed.data,
+              isDefault,
+            });
+        });
+      },
+      async removeAddress(id, expectedRevision) {
+        await repository.update(expectedRevision, (db) => {
+          const user = requireActor(db, "customer", "profile:own");
+          const address = db.addresses.find(
+            (a) => a.id === id && a.userId === user.id,
+          );
+          if (!address)
+            throw new ServiceError(
+              "NOT_FOUND",
+              "Không tìm thấy địa chỉ của bạn.",
+            );
+          db.addresses = db.addresses.filter((a) => a.id !== id);
+          if (address.isDefault) {
+            const replacement = db.addresses.find((a) => a.userId === user.id);
+            if (replacement) replacement.isDefault = true;
+          }
+        });
+      },
+      async setDefaultAddress(id, expectedRevision) {
+        await repository.update(expectedRevision, (db) => {
+          const user = requireActor(db, "customer", "profile:own");
+          if (!db.addresses.some((a) => a.id === id && a.userId === user.id))
+            throw new ServiceError(
+              "NOT_FOUND",
+              "Không tìm thấy địa chỉ của bạn.",
+            );
+          db.addresses
+            .filter((a) => a.userId === user.id)
+            .forEach((a) => {
+              a.isDefault = a.id === id;
+            });
         });
       },
     },

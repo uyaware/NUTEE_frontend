@@ -45,7 +45,7 @@
     "preview": "vite preview --host 0.0.0.0",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "format": "prettier --ignore-path .prettierignore --write src tests docs/service-contract.md docs/m0-m1-acceptance.md docs/m2-acceptance.md design-system README.md *.json *.ts *.js index.html",
-    "format:check": "prettier --ignore-path .prettierignore --check src tests docs/service-contract.md docs/m0-m1-acceptance.md docs/m2-acceptance.md design-system README.md *.json *.ts *.js index.html"
+    "format": "prettier --ignore-path .prettierignore --write src tests docs/service-contract.md docs/m0-m1-acceptance.md docs/m2-acceptance.md docs/m3-acceptance.md design-system README.md *.json *.ts *.js index.html",
+    "format:check": "prettier --ignore-path .prettierignore --check src tests docs/service-contract.md docs/m0-m1-acceptance.md docs/m2-acceptance.md docs/m3-acceptance.md design-system README.md *.json *.ts *.js index.html"
   }
 }

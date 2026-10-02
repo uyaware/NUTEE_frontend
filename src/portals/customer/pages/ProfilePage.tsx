@@ -96,13 +96,16 @@ export default function ProfilePage() {
       </Paper>
       <Paper variant="outlined" sx={{ p: 3 }}>
         <Typography variant="h3" component="h2" sx={{ mb: 2 }}>
-          Địa chỉ mẫu
+          Địa chỉ giao hàng
         </Typography>
         {profile.data.addresses.map((a) => (
           <Typography key={a.id}>
             {a.recipient} · {a.line}
           </Typography>
         ))}
+        <Button component={Link} to="/account/addresses" sx={{ mt: 2 }}>
+          Quản lý địa chỉ
+        </Button>
       </Paper>
       <Stack direction="row" spacing={2} flexWrap="wrap">
         <Button component={Link} to="/account/orders" variant="outlined">

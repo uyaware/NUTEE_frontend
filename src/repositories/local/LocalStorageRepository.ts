@@ -3,13 +3,17 @@ import { createSeed } from "../../mocks/seed";
 import { databaseSchema } from "../../shared/types/database";
 import type { Database, Portal, Session } from "../../shared/types/database";
 import { ServiceError } from "../../shared/lib/errors";
+import { guestCartSchema } from "../../shared/types/cart";
+import type { GuestCart } from "../../shared/types/cart";
 import type {
   DataRepository,
   SessionRepository,
   StorageLike,
+  GuestCartRepository,
 } from "../contracts";
 
 export const DB_KEY = "nutee:db:v1";
+export const GUEST_CART_KEY = "nutee:cart:guest";
 export const SESSION_KEYS = {
   customer: "nutee:session:customer",
   backoffice: "nutee:session:backoffice",
@@ -18,7 +22,7 @@ export const OWNED_KEYS = [
   DB_KEY,
   SESSION_KEYS.customer,
   SESSION_KEYS.backoffice,
-  "nutee:cart:guest",
+  GUEST_CART_KEY,
 ];
 const sessionSchema = z.object({
   userId: z.string().min(1),
@@ -26,7 +30,7 @@ const sessionSchema = z.object({
 });
 
 export class LocalStorageRepository
-  implements DataRepository, SessionRepository
+  implements DataRepository, SessionRepository, GuestCartRepository
 {
   private listeners = new Set<() => void>();
   private queue: Promise<unknown> = Promise.resolve();
@@ -133,6 +137,93 @@ export class LocalStorageRepository
       this.access((s) => s.setItem(DB_KEY, JSON.stringify(validated.data)));
       this.publish();
       return validated.data;
+    });
+  }
+  private guest(db: Database): GuestCart {
+    const raw = this.access((s) => s.getItem(GUEST_CART_KEY));
+    if (raw !== null) {
+      let parsed;
+      try {
+        parsed = guestCartSchema.safeParse(JSON.parse(raw));
+      } catch {
+        /* Keep corrupt data for explicit recovery. */
+      }
+      if (!parsed?.success)
+        throw new ServiceError(
+          "CORRUPT_DATA",
+          "Giỏ khách bị lỗi. Dữ liệu vẫn được giữ; có thể đặt lại demo tại trang Demo & dữ liệu.",
+        );
+      if (!db.guestCartMerges.some((m) => m.id === parsed.data.id))
+        return parsed.data;
+    }
+    return { id: crypto.randomUUID(), revision: 0, items: [] };
+  }
+  async readGuest() {
+    return this.guest(await this.read());
+  }
+  async updateGuest(
+    expectedRevision: number,
+    change: (cart: GuestCart, db: Database) => void,
+  ) {
+    await this.read();
+    await this.exclusive(() => {
+      const raw = this.access((s) => s.getItem(DB_KEY));
+      if (raw === null)
+        throw new ServiceError(
+          "CONFLICT",
+          "Dữ liệu đã được đặt lại. Tải lại giỏ hàng.",
+        );
+      const db = this.parse(raw);
+      const cart = this.guest(db);
+      if (cart.revision !== expectedRevision)
+        throw new ServiceError(
+          "CONFLICT",
+          "Giỏ hàng đã thay đổi ở tab khác. Tải lại trước khi sửa.",
+        );
+      change(cart, db);
+      cart.revision++;
+      const validated = guestCartSchema.safeParse(cart);
+      if (!validated.success)
+        throw new ServiceError(
+          "VALIDATION",
+          "Giỏ hàng không hợp lệ. Chưa lưu thay đổi.",
+        );
+      this.access((s) =>
+        s.setItem(GUEST_CART_KEY, JSON.stringify(validated.data)),
+      );
+      this.publish();
+    });
+  }
+  async mergeGuest(
+    userId: string,
+    change: (db: Database, cart: GuestCart) => void,
+  ) {
+    await this.read();
+    await this.exclusive(() => {
+      const raw = this.access((s) => s.getItem(DB_KEY));
+      if (raw === null)
+        throw new ServiceError(
+          "CONFLICT",
+          "Dữ liệu đã được đặt lại. Thử đăng nhập lại.",
+        );
+      const db = this.parse(raw);
+      const cart = this.guest(db);
+      // The callback always rechecks the account, including empty/retried merges.
+      change(db, cart);
+      if (cart.items.length) {
+        db.guestCartMerges.push({ id: cart.id, userId });
+        db.revision++;
+        const validated = databaseSchema.safeParse(db);
+        if (!validated.success)
+          throw new ServiceError(
+            "VALIDATION",
+            "Không thể gộp giỏ hàng. Giỏ khách vẫn được giữ.",
+          );
+        this.access((s) => s.setItem(DB_KEY, JSON.stringify(validated.data)));
+      }
+      // A receipt in the same DB commit prevents duplicates if this removal fails.
+      this.access((s) => s.removeItem(GUEST_CART_KEY));
+      this.publish();
     });
   }
   get(portal: Portal): Session | null {

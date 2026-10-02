@@ -14,7 +14,13 @@ export function safeReturnTo(value: string | null, portal: Portal): string {
       path !== "/management/login"
       ? value
       : fallback;
-  return path !== "/login" &&
+  return ![
+    "/login",
+    "/register",
+    "/verify-email",
+    "/forgot-password",
+    "/reset-password",
+  ].includes(path) &&
     path !== "/management" &&
     !path.startsWith("/management/")
     ? value

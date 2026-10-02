@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   Alert,
   AppBar,
+  Badge,
   Box,
   Button,
   Container,
@@ -17,6 +18,8 @@ import MenuRounded from "@mui/icons-material/MenuRounded";
 import PersonOutlineRounded from "@mui/icons-material/PersonOutlineRounded";
 import ArrowOutwardRounded from "@mui/icons-material/ArrowOutwardRounded";
 import SearchRounded from "@mui/icons-material/SearchRounded";
+import ShoppingCartOutlined from "@mui/icons-material/ShoppingCartOutlined";
+import { useCart } from "../components/useCart";
 import {
   Link,
   NavLink,
@@ -36,6 +39,13 @@ export function StorefrontLayout() {
   const search = new URLSearchParams(location.search).get("q") ?? "";
   const session = useSession("customer");
   const logout = useLogout("customer");
+  const cart = useCart();
+  const state = location.state as { cartMergeNotices?: unknown } | null;
+  const mergeNotices = Array.isArray(state?.cartMergeNotices)
+    ? state.cartMergeNotices.filter(
+        (value): value is string => typeof value === "string",
+      )
+    : [];
   const nav = (
     <>
       <Button component={NavLink} to="/" end>
@@ -97,6 +107,15 @@ export function StorefrontLayout() {
               {nav}
             </Stack>
             <Stack direction="row" alignItems="center" spacing={1}>
+              <IconButton
+                component={Link}
+                to="/cart"
+                aria-label={`Giỏ hàng${cart.data ? `, ${cart.data.quantity} sản phẩm` : ""}`}
+              >
+                <Badge badgeContent={cart.data?.quantity ?? 0} color="primary">
+                  <ShoppingCartOutlined />
+                </Badge>
+              </IconButton>
               <Button
                 component={Link}
                 to={session.data ? "/account/profile" : "/login"}
@@ -172,6 +191,18 @@ export function StorefrontLayout() {
           </Alert>
         )}
         {logout.isError && <ErrorState error={logout.error} />}
+        {!!mergeNotices.length && (
+          <Alert severity="warning" sx={{ mb: 3 }}>
+            <Stack spacing={1}>
+              {mergeNotices.map((notice, index) => (
+                <Typography key={index}>{notice}</Typography>
+              ))}
+              <Button component={Link} to="/cart">
+                Kiểm tra giỏ hàng
+              </Button>
+            </Stack>
+          </Alert>
+        )}
         <Outlet />
       </Container>
       <Box

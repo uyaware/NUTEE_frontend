@@ -19,6 +19,15 @@ import { ResetDemo } from "../shared/components/DemoPage";
 import { errorMessage } from "../shared/lib/errors";
 const CustomerRoutes = lazy(() => import("../portals/customer/routes"));
 const BackofficeRoutes = lazy(() => import("../portals/backoffice/routes"));
+const customerTitles: Record<string, string> = {
+  "/cart": "Giỏ hàng",
+  "/account/addresses": "Địa chỉ giao hàng",
+  "/account/security": "Bảo mật tài khoản",
+  "/register": "Đăng ký demo",
+  "/verify-email": "Xác minh email demo",
+  "/forgot-password": "Quên mật khẩu demo",
+  "/reset-password": "Đặt lại mật khẩu demo",
+};
 
 export default function App() {
   const client = useQueryClient();
@@ -67,7 +76,7 @@ export default function App() {
                       ? "Design system"
                       : "Demo";
     if (!location.pathname.startsWith("/products/"))
-      document.title = `NUTEE · ${name}`;
+      document.title = `NUTEE · ${customerTitles[location.pathname] ?? name}`;
     document.getElementById("main-content")?.focus({ preventScroll: true });
     window.scrollTo(0, 0);
   }, [location.pathname]);

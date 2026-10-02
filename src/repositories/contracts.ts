@@ -1,4 +1,17 @@
 import type { Database, Portal, Session } from "../shared/types/database";
+import type { GuestCart } from "../shared/types/cart";
+
+export interface GuestCartRepository {
+  readGuest(): Promise<GuestCart>;
+  updateGuest(
+    expectedRevision: number,
+    change: (cart: GuestCart, db: Database) => void,
+  ): Promise<void>;
+  mergeGuest(
+    userId: string,
+    change: (db: Database, cart: GuestCart) => void,
+  ): Promise<void>;
+}
 
 export interface DataRepository {
   read(): Promise<Database>;

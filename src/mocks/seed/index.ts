@@ -73,6 +73,7 @@ export function createSeed(now = new Date()): Database {
     productCategories: [],
     carts: [1, 2].map((n) => ({ id: `cart-${n}`, userId: `customer-${n}` })),
     cartItems: [],
+    guestCartMerges: [],
     orders: [],
     orderItems: [],
     paymentTransactions: [],

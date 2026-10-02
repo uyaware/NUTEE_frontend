@@ -105,6 +105,7 @@ export const databaseSchema = z
         quantity: z.number().int().positive(),
       }),
     ),
+    guestCartMerges: z.array(z.object({ id, userId: id })).default([]),
     orders: z.array(orderSchema),
     orderItems: z.array(
       z.object({
@@ -248,6 +249,14 @@ export const databaseSchema = z
       fk(db.carts, r.cartId, "cartItem.cart");
       fk(db.products, r.productId, "cartItem.product");
     });
+    if (
+      new Set(db.cartItems.map((r) => `${r.cartId}:${r.productId}`)).size !==
+      db.cartItems.length
+    )
+      fail("Sản phẩm trùng trong giỏ hàng");
+    db.guestCartMerges.forEach((r) =>
+      fk(db.users, r.userId, "guestCartMerge.user"),
+    );
     db.orders.forEach((o) => {
       fk(db.users, o.userId, "order.user");
       o.history.forEach((h) => fk(db.users, h.actorId, "order.history.actor"));

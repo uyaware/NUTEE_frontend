@@ -1,4 +1,4 @@
-# NUTEE frontend — M0–M2
+# NUTEE frontend — M0–M3
 
 React + Vite + TypeScript strict, Material UI/MUI Icons, TanStack Query, React Hook Form/Zod. Giao diện tiếng Việt, VND; palette xanh/than theo `public/logo_nutee.png`.
 
@@ -15,7 +15,11 @@ Sau lần cài đầu tiên, dùng `npm.cmd ci` để cài đúng phiên bản d
 
 Mở `http://localhost:5173/` cho customer; `http://localhost:5173/management` cho staff/admin. Chạy cùng server/origin để chia sẻ localStorage. Auth riêng tại `/login` và `/management/login`. `/demo` kiểm tra dữ liệu/reset; `/design-system` preview theme.
 
-Catalog tại `/products`, chi tiết tại `/products/:id`. Tìm theo tên/SKU/hãng/cấu hình; lọc danh mục/hãng/giá/còn hàng/thông số, sắp xếp và phân trang. Bộ lọc nằm trong URL nên reload hoặc chia sẻ link giữ lựa chọn. Mobile dùng Drawer. Gallery/thông số/đánh giá hiện chỉ đọc; giỏ và đặt hàng thuộc M3–M4.
+Catalog tại `/products`, chi tiết tại `/products/:id`. Tìm theo tên/SKU/hãng/cấu hình; lọc danh mục/hãng/giá/còn hàng/thông số, sắp xếp và phân trang. Bộ lọc nằm trong URL nên reload hoặc chia sẻ link giữ lựa chọn. Mobile dùng Drawer. Gallery/thông số/đánh giá hiện chỉ đọc.
+
+M3: thêm sản phẩm từ trang chi tiết vào `/cart`, tăng/giảm/xóa và lưu giỏ sau reload. Guest chỉ lưu ID sản phẩm/số lượng; login customer gộp với giỏ tài khoản, kiểm tra tồn kho và báo điều chỉnh. Logout giữ giỏ tài khoản; giỏ khách mới rỗng. Hai customer có giỏ riêng; phiên backoffice giữ độc lập.
+
+Tài khoản có navigation hồ sơ/địa chỉ/bảo mật/đơn hàng. `/account/addresses` hỗ trợ thêm/sửa/xóa/chọn mặc định, validation, xác nhận xóa và conflict giữa các tab. `/register` tạo customer demo với mật khẩu chung bên dưới. `/verify-email`, `/forgot-password`, `/reset-password`, `/account/security` là màn hướng dẫn giới hạn auth demo: chưa gửi email, đổi mật khẩu hay OAuth. Checkout/đặt hàng/thanh toán thuộc M4. Xem [nghiệm thu M3](docs/m3-acceptance.md).
 
 | Role     | Email               | Mật khẩu demo |
 | -------- | ------------------- | ------------- |
@@ -63,4 +67,4 @@ Seed v2 bổ sung ảnh gallery và RAM/storage/connection mẫu. Dữ liệu se
 - `src/mocks`: relational seed và test utilities.
 - `design-system/nutee`: master + catalog/dashboard/checkout overrides.
 
-M1 gồm shell, login/session, guards, seed/persistence/recovery/reset và preview dữ liệu. Profile mutation/product editor là luồng nhỏ để kiểm chứng nền tảng. M2 bổ sung catalog/search/filter/detail/gallery/specs/reviews read. Cart, checkout, payment, workflow staff và CRUD admin đầy đủ thuộc M3–M6. API thật/M8 chưa triển khai.
+M1 gồm shell, login/session, guards, seed/persistence/recovery/reset và preview dữ liệu. Profile mutation/product editor là luồng nhỏ để kiểm chứng nền tảng. M2 bổ sung catalog/search/filter/detail/gallery/specs/reviews read. M3 bổ sung account/address/cart/register demo. Checkout, payment, workflow staff và CRUD admin đầy đủ thuộc M4–M6. API thật/M8 chưa triển khai.

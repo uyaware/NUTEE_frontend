@@ -12,9 +12,16 @@ import type {
   ProductDetail,
   ProductReview,
 } from "../shared/types/catalog";
+import type { Cart } from "../shared/types/cart";
+import type { AddressInput } from "../shared/types/account";
 
 export interface AuthService {
-  login(portal: Portal, email: string, password: string): Promise<User>;
+  register(name: string, email: string): Promise<User>;
+  login(
+    portal: Portal,
+    email: string,
+    password: string,
+  ): Promise<User & { cartMergeNotices?: string[] }>;
   currentUser(portal: Portal): Promise<User | null>;
   logout(portal: Portal): Promise<void>;
 }
@@ -31,6 +38,28 @@ export interface ProfileService {
     revision: number;
   }>;
   updateName(name: string, expectedRevision: number): Promise<void>;
+  saveAddress(
+    id: string | null,
+    input: AddressInput,
+    expectedRevision: number,
+  ): Promise<void>;
+  removeAddress(id: string, expectedRevision: number): Promise<void>;
+  setDefaultAddress(id: string, expectedRevision: number): Promise<void>;
+}
+export interface CartService {
+  get(): Promise<Cart>;
+  add(productId: string, quantity: number): Promise<void>;
+  setQuantity(
+    productId: string,
+    quantity: number,
+    expectedRevision: number,
+    ownerId: string | null,
+  ): Promise<void>;
+  remove(
+    productId: string,
+    expectedRevision: number,
+    ownerId: string | null,
+  ): Promise<void>;
 }
 export interface OrderService {
   list(portal: Portal): Promise<Page<Order>>;
@@ -64,6 +93,7 @@ export interface Services {
   auth: AuthService;
   catalog: CatalogService;
   profile: ProfileService;
+  cart: CartService;
   orders: OrderService;
   management: ManagementService;
   demo: DemoService;

@@ -28,6 +28,7 @@ import { money, dateTime } from "../../../shared/lib/format";
 import type { ProductDetail } from "../../../shared/types/catalog";
 import { ProductImage } from "../components/ProductImage";
 import { ServiceError } from "../../../shared/lib/errors";
+import { AddToCart } from "../components/AddToCart";
 
 function ProductGallery({ product }: { product: ProductDetail }) {
   const [selectedId, setSelectedId] = useState(product.images[0]?.id);
@@ -268,10 +269,15 @@ export default function ProductDetailPage() {
           <Typography color="text.secondary">
             Sản phẩm và giá là dữ liệu mẫu. Bản demo hiện chưa hỗ trợ đặt hàng.
           </Typography>
+          <AddToCart
+            key={product.id}
+            productId={product.id}
+            stock={product.stock}
+          />
           <Button
             component={Link}
             to={returnTo}
-            variant="contained"
+            variant="outlined"
             sx={{ alignSelf: "flex-start" }}
           >
             Quay lại danh sách

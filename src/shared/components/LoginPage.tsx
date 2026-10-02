@@ -54,7 +54,10 @@ export function LoginPage({ portal }: { portal: Portal }) {
       await client.cancelQueries({ queryKey: [portal] });
       client.removeQueries({ queryKey: [portal] });
       client.setQueryData(["session", portal], user);
-      navigate(safeReturnTo(params.get("returnTo"), portal), { replace: true });
+      navigate(safeReturnTo(params.get("returnTo"), portal), {
+        replace: true,
+        state: { cartMergeNotices: user.cartMergeNotices },
+      });
     },
   });
   return (
@@ -237,6 +240,19 @@ export function LoginPage({ portal }: { portal: Portal }) {
             ))}
           </Stack>
         </Paper>
+        {!management && (
+          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+            <Button
+              component={Link}
+              to={`/register?${new URLSearchParams({ returnTo: safeReturnTo(params.get("returnTo"), portal) })}`}
+            >
+              Tạo tài khoản demo
+            </Button>
+            <Button component={Link} to="/forgot-password">
+              Quên mật khẩu
+            </Button>
+          </Stack>
+        )}
         <Button
           component={Link}
           to={management ? "/login" : "/management/login"}
