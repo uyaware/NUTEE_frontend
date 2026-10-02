@@ -77,6 +77,7 @@ test("specification facets and empty results can be cleared", async ({
   page,
 }) => {
   await page.goto("/products?category=laptop");
+  await page.getByRole("button", { name: "Lưu trữ", exact: true }).click();
   await page.getByLabel("256GB", { exact: true }).click();
   await expect(page.getByLabel("256GB", { exact: true })).toBeChecked();
   await expect(page.getByRole("status", { name: "Số sản phẩm" })).toHaveText(

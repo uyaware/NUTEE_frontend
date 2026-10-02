@@ -28,6 +28,7 @@ import { money } from "../../../shared/lib/format";
 import type { CatalogFilters as Filters } from "../../../shared/types/catalog";
 import { CatalogFilters } from "../components/CatalogFilters";
 import { ProductCard } from "../components/ProductCard";
+import { tokens } from "../../../shared/theme/tokens";
 
 const sorts = {
   featured: "Nổi bật",
@@ -122,7 +123,7 @@ export default function CatalogPage() {
     />
   );
   return (
-    <Stack spacing={3}>
+    <Stack spacing={2}>
       <Box>
         <Typography variant="overline" color="primary">
           KHÁM PHÁ NUTEE
@@ -167,7 +168,7 @@ export default function CatalogPage() {
               minHeight: 44,
               "& .MuiChip-label": {
                 whiteSpace: "normal",
-                py: 1,
+                py: 0.5,
                 overflowWrap: "anywhere",
               },
               "& .MuiChip-deleteIcon": { flexShrink: 0 },
@@ -195,20 +196,31 @@ export default function CatalogPage() {
           display: "grid",
           gridTemplateColumns: {
             xs: "minmax(0, 1fr)",
-            md: "260px minmax(0, 1fr)",
+            md: `${tokens.layout.filterWidth}px minmax(0, 1fr)`,
           },
-          gap: 3,
+          gap: 2,
           alignItems: "start",
         }}
       >
         <Paper
           component="aside"
           variant="outlined"
-          sx={{ p: 3, display: { xs: "none", md: "block" } }}
+          aria-label="Bộ lọc sản phẩm"
+          sx={{
+            p: 2,
+            display: { xs: "none", md: "block" },
+            position: "sticky",
+            top: tokens.layout.storefrontHeaderHeight + 16,
+            maxHeight: `calc(100dvh - ${tokens.layout.storefrontHeaderHeight + 32}px)`,
+            overflowY: "auto",
+            overscrollBehavior: "contain",
+            scrollbarWidth: "thin",
+            scrollPaddingBlock: 16,
+          }}
         >
           {filterPanel ?? <LoadingState />}
         </Paper>
-        <Stack spacing={3} sx={{ minWidth: 0 }}>
+        <Stack spacing={2} sx={{ minWidth: 0 }}>
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={2}
@@ -264,9 +276,9 @@ export default function CatalogPage() {
                   gridTemplateColumns: {
                     xs: "1fr",
                     sm: "repeat(2, minmax(0, 1fr))",
-                    lg: "repeat(3, minmax(0, 1fr))",
+                    lg: "repeat(4, minmax(0, 1fr))",
                   },
-                  gap: 2.5,
+                  gap: 2,
                 }}
               >
                 {query.data.items.map((product) => (
@@ -328,11 +340,41 @@ export default function CatalogPage() {
         </Stack>
       </Box>
       <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
-        <Stack spacing={3} sx={{ p: 3, width: "min(340px, 100vw)" }}>
-          <Button onClick={() => setOpen(false)} variant="contained">
-            Xem kết quả
-          </Button>
-          {filterPanel}
+        <Stack sx={{ width: "min(340px, 100vw)", height: "100%" }}>
+          <Box
+            sx={{
+              p: 2,
+              borderBottom: "1px solid",
+              borderColor: "divider",
+              flexShrink: 0,
+            }}
+          >
+            <Button
+              fullWidth
+              onClick={() => setOpen(false)}
+              variant="contained"
+            >
+              Xem kết quả
+            </Button>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mt: 1, textAlign: "center" }}
+            >
+              {query.data?.total ?? 0} sản phẩm phù hợp
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              p: 2,
+              flex: 1,
+              minHeight: 0,
+              overflowY: "auto",
+              overscrollBehavior: "contain",
+            }}
+          >
+            {filterPanel}
+          </Box>
         </Stack>
       </Drawer>
     </Stack>

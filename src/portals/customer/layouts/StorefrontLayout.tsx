@@ -27,6 +27,7 @@ import {
 import { Brand } from "../../../shared/components/Brand";
 import { useLogout, useSession } from "../../../shared/auth/useSession";
 import { ErrorState } from "../../../shared/components/Feedback";
+import { tokens } from "../../../shared/theme/tokens";
 
 export function StorefrontLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -70,14 +71,18 @@ export function StorefrontLayout() {
         position="sticky"
         color="inherit"
         elevation={0}
-        sx={{ borderBottom: "1px solid", borderColor: "divider" }}
+        sx={{
+          borderBottom: "1px solid",
+          borderColor: "divider",
+          height: tokens.layout.storefrontHeaderHeight,
+        }}
       >
         <Container maxWidth="xl">
           <Toolbar
             disableGutters
             sx={{
               gap: 2,
-              minHeight: "80px !important",
+              minHeight: "64px !important",
               justifyContent: "space-between",
             }}
           >
@@ -121,7 +126,7 @@ export function StorefrontLayout() {
               ).trim();
               navigate(`/products${q ? `?${new URLSearchParams({ q })}` : ""}`);
             }}
-            sx={{ display: "flex", gap: 1, pb: 2 }}
+            sx={{ display: "flex", gap: 1, pb: 1.5 }}
           >
             <TextField
               name="q"
@@ -158,7 +163,7 @@ export function StorefrontLayout() {
         id="main-content"
         tabIndex={-1}
         maxWidth="xl"
-        sx={{ py: { xs: 3, md: 5 }, flex: 1 }}
+        sx={{ py: { xs: 2.5, md: 3 }, flex: 1 }}
       >
         {session.isError && (
           <Alert severity="warning" sx={{ mb: 2 }}>

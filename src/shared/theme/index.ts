@@ -25,28 +25,32 @@ const base: ThemeOptions = {
   typography: {
     fontFamily: tokens.typography.family,
     h1: {
-      fontSize: "clamp(2rem, 4.5vw, 3.6rem)",
+      fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)",
       fontWeight: 700,
       lineHeight: 1.15,
       letterSpacing: "-0.045em",
     },
     h2: {
-      fontSize: "clamp(1.5rem, 3vw, 2rem)",
+      fontSize: "clamp(1.25rem, 2.5vw, 1.625rem)",
       fontWeight: 700,
       letterSpacing: "-0.035em",
     },
-    h3: { fontSize: "1.25rem", fontWeight: 600 },
-    h4: { fontSize: "1.125rem", fontWeight: 600 },
-    body1: { fontSize: "1rem", lineHeight: 1.7 },
-    body2: { fontSize: ".875rem", lineHeight: 1.65 },
-    button: { textTransform: "none", fontWeight: 600 },
+    h3: { fontSize: "1.125rem", fontWeight: 600 },
+    h4: { fontSize: "1rem", fontWeight: 600 },
+    body1: { fontSize: tokens.typography.body, lineHeight: 1.6 },
+    body2: { fontSize: tokens.typography.small, lineHeight: 1.6 },
+    button: {
+      textTransform: "none",
+      fontWeight: 600,
+      fontSize: tokens.typography.small,
+    },
   },
   shape: { borderRadius: tokens.radius.medium },
   spacing: tokens.spacing.unit,
   components: {
     MuiButton: {
       defaultProps: { disableElevation: true },
-      styleOverrides: { root: { minHeight: 44, paddingInline: 20 } },
+      styleOverrides: { root: { minHeight: 44, paddingInline: 16 } },
     },
     MuiIconButton: {
       styleOverrides: { root: { minWidth: 44, minHeight: 44 } },
@@ -58,7 +62,28 @@ const base: ThemeOptions = {
     MuiCard: {
       styleOverrides: { root: { border: `1px solid ${tokens.color.border}` } },
     },
-    MuiTextField: { defaultProps: { fullWidth: true } },
+    MuiTextField: { defaultProps: { fullWidth: true, size: "small" } },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          fontSize: tokens.typography.body,
+          "@media (max-width: 599.95px)": { fontSize: "1rem" },
+        },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: { root: { fontSize: tokens.typography.body } },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: { fontSize: tokens.typography.body, minHeight: 44 },
+      },
+    },
+    MuiCardContent: {
+      styleOverrides: {
+        root: { padding: 12, "&:last-child": { paddingBottom: 12 } },
+      },
+    },
     MuiTableCell: {
       styleOverrides: {
         head: { fontWeight: 600, background: tokens.color.canvas },
@@ -76,7 +101,12 @@ const base: ThemeOptions = {
         },
         "::selection": { background: tokens.color.blueTint },
         a: { color: "inherit" },
-        html: { scrollPaddingTop: 100 },
+        // Global scroll padding makes Chrome repeatedly scroll when revealing
+        // the caret in the sticky navbar. Offset content targets instead.
+        "#main-content, #main-content :is(a, button, input, textarea, select, [tabindex], [id])":
+          {
+            scrollMarginTop: tokens.layout.storefrontHeaderHeight + 16,
+          },
         "@media (prefers-reduced-motion: reduce)": {
           "*, *::before, *::after": {
             animationDuration: "0.01ms !important",

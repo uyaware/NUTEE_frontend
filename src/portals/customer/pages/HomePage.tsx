@@ -28,7 +28,7 @@ export default function HomePage() {
     queryFn: services.catalog.featured,
   });
   return (
-    <Stack spacing={5}>
+    <Stack spacing={4}>
       <Paper
         sx={{
           bgcolor: tokens.color.blueTint,
@@ -38,7 +38,7 @@ export default function HomePage() {
           gridTemplateColumns: { xs: "1fr", md: "1.15fr 1fr" },
         }}
       >
-        <Box sx={{ p: { xs: 3, sm: 5, lg: 7 } }}>
+        <Box sx={{ p: { xs: 3, sm: 4, lg: 5 } }}>
           <Chip
             label="CHÀO MỪNG ĐẾN NUTEE"
             variant="outlined"
@@ -79,7 +79,7 @@ export default function HomePage() {
         </Box>
         <Box
           sx={{
-            minHeight: { xs: 240, md: 420 },
+            minHeight: { xs: 220, md: 340 },
             position: "relative",
             display: "flex",
             alignItems: "center",
@@ -157,7 +157,7 @@ export default function HomePage() {
               component={Link}
               to={`/products?category=${category}`}
               sx={{
-                p: 2.5,
+                p: 2,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "flex-start",
@@ -226,9 +226,10 @@ export default function HomePage() {
               gridTemplateColumns: {
                 xs: "1fr",
                 sm: "repeat(2, 1fr)",
-                lg: "repeat(4, 1fr)",
+                md: "repeat(3, minmax(0, 1fr))",
+                lg: "repeat(5, minmax(0, 1fr))",
               },
-              gap: 2.5,
+              gap: 2,
             }}
           >
             {products.data.map((p) => (

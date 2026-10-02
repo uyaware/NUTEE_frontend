@@ -1,18 +1,114 @@
+import { useId } from "react";
+import type { ReactNode } from "react";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
   Button,
   Checkbox,
-  Divider,
+  Chip,
   FormControlLabel,
   MenuItem,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
+import ExpandMoreRounded from "@mui/icons-material/ExpandMoreRounded";
 import type {
   CatalogFacets,
   CatalogFilters as Filters,
 } from "../../../shared/types/catalog";
+
+const pricePresets = [
+  {
+    id: "all",
+    label: "Tất cả mức giá",
+    minPrice: undefined,
+    maxPrice: undefined,
+  },
+  {
+    id: "under-5",
+    label: "Dưới 5 triệu",
+    minPrice: undefined,
+    maxPrice: 4999999,
+  },
+  {
+    id: "5-15",
+    label: "5 – dưới 15 triệu",
+    minPrice: 5000000,
+    maxPrice: 14999999,
+  },
+  {
+    id: "15-25",
+    label: "15 – dưới 25 triệu",
+    minPrice: 15000000,
+    maxPrice: 24999999,
+  },
+  {
+    id: "over-25",
+    label: "Từ 25 triệu",
+    minPrice: 25000000,
+    maxPrice: undefined,
+  },
+];
+
+function FilterGroup({
+  title,
+  selectedCount = 0,
+  defaultExpanded = false,
+  children,
+}: {
+  title: string;
+  selectedCount?: number;
+  defaultExpanded?: boolean;
+  children: ReactNode;
+}) {
+  const id = useId();
+  return (
+    <Accordion
+      disableGutters
+      defaultExpanded={defaultExpanded || selectedCount > 0}
+      sx={{
+        bgcolor: "transparent",
+        "&:before": { display: "none" },
+        borderBottom: "1px solid",
+        borderColor: "divider",
+      }}
+    >
+      <AccordionSummary
+        id={`${id}-heading`}
+        aria-controls={`${id}-content`}
+        expandIcon={<ExpandMoreRounded fontSize="small" />}
+        sx={{
+          p: 0,
+          minHeight: 44,
+          "& .MuiAccordionSummary-content": {
+            my: 1,
+            alignItems: "center",
+            gap: 1,
+          },
+        }}
+      >
+        <Typography component="span" variant="body2" fontWeight={600}>
+          {title}
+        </Typography>
+        {selectedCount > 0 && (
+          <Chip
+            size="small"
+            label={`${selectedCount} đã chọn`}
+            sx={{ height: 22, fontSize: ".75rem" }}
+          />
+        )}
+      </AccordionSummary>
+      <AccordionDetails id={`${id}-content`} sx={{ p: 0, pb: 1.5 }}>
+        <Box role="group" aria-label={title}>
+          {children}
+        </Box>
+      </AccordionDetails>
+    </Accordion>
+  );
+}
 
 export function CatalogFilters({
   filters,
@@ -27,9 +123,23 @@ export function CatalogFilters({
     values.includes(value)
       ? values.filter((v) => v !== value)
       : [...values, value];
+  const preset =
+    pricePresets.find(
+      (p) => p.minPrice === filters.minPrice && p.maxPrice === filters.maxPrice,
+    )?.id ?? "custom";
+  const checkboxStyle = {
+    m: 0,
+    minHeight: 44,
+    alignItems: "center",
+    "& .MuiCheckbox-root": { p: 0.75 },
+    "& .MuiFormControlLabel-label": {
+      typography: "body2",
+      overflowWrap: "anywhere",
+    },
+  };
   return (
-    <Stack spacing={3}>
-      <Typography variant="h3" component="h2">
+    <Stack spacing={1.5}>
+      <Typography variant="h4" component="h2">
         Bộ lọc sản phẩm
       </Typography>
       <TextField
@@ -54,73 +164,122 @@ export function CatalogFilters({
             </MenuItem>
           )}
       </TextField>
-      <Box component="fieldset" sx={{ border: 0, p: 0, m: 0, minWidth: 0 }}>
-        <Typography component="legend" fontWeight={600}>
-          Thương hiệu
-        </Typography>
-        {facets.brands.map((b) => (
-          <FormControlLabel
-            key={b.id}
-            sx={{ display: "flex", minHeight: 44 }}
-            control={
-              <Checkbox
-                checked={filters.brands.includes(b.id)}
-                onChange={() =>
-                  onChange({ brands: toggle(filters.brands, b.id) })
-                }
-              />
-            }
-            label={b.name}
-          />
-        ))}
+      <FilterGroup
+        title="Thương hiệu"
+        selectedCount={filters.brands.length}
+        defaultExpanded
+      >
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 0.25,
+          }}
+        >
+          {facets.brands.map((b) => (
+            <FormControlLabel
+              key={b.id}
+              sx={checkboxStyle}
+              control={
+                <Checkbox
+                  checked={filters.brands.includes(b.id)}
+                  onChange={() =>
+                    onChange({ brands: toggle(filters.brands, b.id) })
+                  }
+                />
+              }
+              label={b.name}
+            />
+          ))}
+        </Box>
         {!facets.brands.length && (
           <Typography variant="body2" color="text.secondary">
             Không có thương hiệu trong danh mục này.
           </Typography>
         )}
-      </Box>
-      <Box
-        component="form"
-        key={`${filters.minPrice}-${filters.maxPrice}`}
-        onSubmit={(event) => {
-          event.preventDefault();
-          const data = new FormData(event.currentTarget);
-          const number = (key: string) =>
-            data.get(key) ? Number(data.get(key)) : undefined;
-          onChange({
-            minPrice: number("minPrice"),
-            maxPrice: number("maxPrice"),
-          });
-        }}
+      </FilterGroup>
+      <FilterGroup
+        title="Khoảng giá"
+        selectedCount={
+          filters.minPrice !== undefined || filters.maxPrice !== undefined
+            ? 1
+            : 0
+        }
+        defaultExpanded
       >
-        <Typography fontWeight={600} sx={{ mb: 2 }}>
-          Khoảng giá (VND)
-        </Typography>
-        <Stack spacing={2}>
-          <TextField
-            type="number"
-            name="minPrice"
-            label="Giá từ"
-            defaultValue={filters.minPrice ?? ""}
-            slotProps={{
-              htmlInput: { min: 0, max: Number.MAX_SAFE_INTEGER, step: 1 },
-            }}
-          />
-          <TextField
-            type="number"
-            name="maxPrice"
-            label="Giá đến"
-            defaultValue={filters.maxPrice ?? ""}
-            slotProps={{
-              htmlInput: { min: 0, max: Number.MAX_SAFE_INTEGER, step: 1 },
-            }}
-          />
-          <Button type="submit" variant="outlined">
-            Áp dụng khoảng giá
-          </Button>
-        </Stack>
-      </Box>
+        <Box
+          component="form"
+          key={`${filters.minPrice}-${filters.maxPrice}`}
+          onSubmit={(event) => {
+            event.preventDefault();
+            const data = new FormData(event.currentTarget);
+            const number = (key: string) =>
+              data.get(key) ? Number(data.get(key)) : undefined;
+            onChange({
+              minPrice: number("minPrice"),
+              maxPrice: number("maxPrice"),
+            });
+          }}
+        >
+          <Stack spacing={1.5}>
+            <TextField
+              select
+              label="Khoảng giá nhanh"
+              value={preset}
+              onChange={(e) => {
+                const selected = pricePresets.find(
+                  (p) => p.id === e.target.value,
+                );
+                if (selected)
+                  onChange({
+                    minPrice: selected.minPrice,
+                    maxPrice: selected.maxPrice,
+                  });
+              }}
+            >
+              {pricePresets.map((p) => (
+                <MenuItem key={p.id} value={p.id}>
+                  {p.label}
+                </MenuItem>
+              ))}
+              {preset === "custom" && (
+                <MenuItem value="custom">Khoảng tùy chọn</MenuItem>
+              )}
+            </TextField>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                gap: 1,
+              }}
+            >
+              <TextField
+                type="number"
+                name="minPrice"
+                label="Giá từ"
+                defaultValue={filters.minPrice ?? ""}
+                slotProps={{
+                  htmlInput: { min: 0, max: Number.MAX_SAFE_INTEGER, step: 1 },
+                }}
+              />
+              <TextField
+                type="number"
+                name="maxPrice"
+                label="Giá đến"
+                defaultValue={filters.maxPrice ?? ""}
+                slotProps={{
+                  htmlInput: { min: 0, max: Number.MAX_SAFE_INTEGER, step: 1 },
+                }}
+              />
+            </Box>
+            <Button type="submit" variant="outlined" fullWidth>
+              Áp dụng khoảng giá
+            </Button>
+          </Stack>
+        </Box>
+      </FilterGroup>
       <FormControlLabel
+        sx={checkboxStyle}
         control={
           <Checkbox
             checked={filters.inStock}
@@ -129,47 +288,55 @@ export function CatalogFilters({
         }
         label="Chỉ sản phẩm còn hàng"
       />
-      {!!facets.specifications.length && <Divider />}
       {facets.specifications.map((s) => (
-        <Box
-          component="fieldset"
+        <FilterGroup
           key={s.key}
-          sx={{ border: 0, p: 0, m: 0, minWidth: 0 }}
+          title={s.label}
+          selectedCount={filters.specifications[s.key]?.length ?? 0}
         >
-          <Typography component="legend" fontWeight={600}>
-            {s.label}
-          </Typography>
-          {s.values.map((value) => (
-            <FormControlLabel
-              key={value}
-              sx={{
-                display: "flex",
-                minHeight: 44,
-                "& .MuiFormControlLabel-label": { overflowWrap: "anywhere" },
-              }}
-              control={
-                <Checkbox
-                  checked={
-                    filters.specifications[s.key]?.includes(value) ?? false
-                  }
-                  onChange={() =>
-                    onChange({
-                      specifications: {
-                        ...filters.specifications,
-                        [s.key]: toggle(
-                          filters.specifications[s.key] ?? [],
-                          value,
-                        ),
-                      },
-                    })
-                  }
-                />
-              }
-              label={value}
-            />
-          ))}
-        </Box>
+          <Stack>
+            {s.values.map((value) => (
+              <FormControlLabel
+                key={value}
+                sx={checkboxStyle}
+                control={
+                  <Checkbox
+                    checked={
+                      filters.specifications[s.key]?.includes(value) ?? false
+                    }
+                    onChange={() =>
+                      onChange({
+                        specifications: {
+                          ...filters.specifications,
+                          [s.key]: toggle(
+                            filters.specifications[s.key] ?? [],
+                            value,
+                          ),
+                        },
+                      })
+                    }
+                  />
+                }
+                label={value}
+              />
+            ))}
+          </Stack>
+        </FilterGroup>
       ))}
+      <Button
+        onClick={() =>
+          onChange({
+            category: "",
+            brands: [],
+            minPrice: undefined,
+            maxPrice: undefined,
+            inStock: false,
+            specifications: {},
+          })
+        }
+      >
+        Đặt lại bộ lọc
+      </Button>
     </Stack>
   );
 }

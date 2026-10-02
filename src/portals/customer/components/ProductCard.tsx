@@ -33,8 +33,8 @@ export function ProductCard({
         <Box
           sx={{
             bgcolor: "background.default",
-            p: 3,
-            height: 190,
+            p: 2,
+            height: { xs: 160, lg: 140 },
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -49,7 +49,11 @@ export function ProductCard({
           <Typography variant="caption" color="text.secondary">
             {product.brandName} · {product.sku}
           </Typography>
-          <Typography component="h3" variant="h4" sx={{ mt: 1, minHeight: 50 }}>
+          <Typography
+            component="h3"
+            variant="body1"
+            sx={{ mt: 0.75, minHeight: 44, fontWeight: 600 }}
+          >
             {product.name}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -57,7 +61,7 @@ export function ProductCard({
           </Typography>
           <Typography
             sx={{
-              mt: 2,
+              mt: 1.25,
               fontWeight: 700,
               color: "primary.main",
               fontVariantNumeric: "tabular-nums",

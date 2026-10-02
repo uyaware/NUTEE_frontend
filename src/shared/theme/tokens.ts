@@ -15,7 +15,12 @@ export const tokens = {
     error: "#B42332",
   },
   radius: { small: 8, medium: 12, large: 24 },
-  spacing: { unit: 8, section: 48, gutter: 24 },
-  typography: { family: '"Be Vietnam Pro", system-ui, sans-serif' },
+  spacing: { unit: 8, section: 32, gutter: 24 },
+  layout: { storefrontHeaderHeight: 121, filterWidth: 232 },
+  typography: {
+    family: '"Be Vietnam Pro", system-ui, sans-serif',
+    body: ".875rem",
+    small: ".8125rem",
+  },
   motion: { fast: 150, normal: 220 },
 } as const;
