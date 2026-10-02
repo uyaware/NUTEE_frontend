@@ -1,0 +1,21 @@
+export const tokens = {
+  color: {
+    electric: "#0088FF",
+    blue: "#0755D9",
+    deepBlue: "#0042B6",
+    charcoal: "#252F3A",
+    canvas: "#F5F7FB",
+    surface: "#FFFFFF",
+    ink: "#202C3A",
+    muted: "#566579",
+    border: "#DCE3ED",
+    blueTint: "#EDF4FF",
+    success: "#187344",
+    warning: "#965600",
+    error: "#B42332",
+  },
+  radius: { small: 8, medium: 12, large: 24 },
+  spacing: { unit: 8, section: 48, gutter: 24 },
+  typography: { family: '"Be Vietnam Pro", system-ui, sans-serif' },
+  motion: { fast: 150, normal: 220 },
+} as const;
