@@ -13,7 +13,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { services } from "../../../services";
 import { registrationSchema } from "../../../shared/types/account";
-import { DEMO_PASSWORD } from "../../../mocks/seed";
 import { ErrorState } from "../../../shared/components/Feedback";
 import { ServiceError } from "../../../shared/lib/errors";
 import { safeReturnTo } from "../../../shared/auth/redirect";
@@ -30,24 +29,24 @@ const copy: Record<
   { title: string; description: string }
 > = {
   "verify-email": {
-    title: "Xác minh email demo",
+    title: "Xác minh email",
     description:
-      "Tài khoản demo có thể đăng nhập ngay sau khi đăng ký. Bản demo chưa hỗ trợ xác minh qua email.",
+      "Bạn có thể đăng nhập sau khi tạo tài khoản. Xác minh qua email hiện chưa khả dụng.",
   },
   "forgot-password": {
-    title: "Quên mật khẩu demo",
+    title: "Quên mật khẩu",
     description:
-      "Các tài khoản trong bản demo dùng chung mật khẩu bên dưới. Bản demo chưa gửi email hoặc liên kết khôi phục mật khẩu.",
+      "Khôi phục mật khẩu qua email hiện chưa khả dụng. Vui lòng liên hệ NUTEE để được hỗ trợ tài khoản.",
   },
   "reset-password": {
-    title: "Đặt lại mật khẩu demo",
+    title: "Đặt lại mật khẩu",
     description:
-      "Mật khẩu demo được cố định trong ứng dụng. Bản demo chưa hỗ trợ nhập mật khẩu mới qua liên kết xác thực.",
+      "Đặt lại mật khẩu hiện chưa khả dụng. Vui lòng liên hệ NUTEE để được hỗ trợ tài khoản.",
   },
   security: {
     title: "Bảo mật tài khoản",
     description:
-      "Đây là phiên trải nghiệm lưu trên trình duyệt, có thời hạn 8 giờ. Bản demo dùng mật khẩu cố định; chưa hỗ trợ đổi mật khẩu hoặc liên kết tài khoản bên ngoài.",
+      "Phiên đăng nhập có thời hạn 8 giờ. Bạn nên đăng xuất khi sử dụng thiết bị dùng chung. Đổi mật khẩu và liên kết tài khoản hiện chưa khả dụng.",
   },
 };
 export default function AuthDemoPage({ mode }: { mode: Mode }) {
@@ -79,9 +78,9 @@ export default function AuthDemoPage({ mode }: { mode: Mode }) {
   const text =
     mode === "register"
       ? {
-          title: "Tạo tài khoản demo",
+          title: "Tạo tài khoản",
           description:
-            "Tài khoản mới luôn là khách hàng. Hồ sơ, địa chỉ và giỏ hàng được lưu trong trình duyệt này.",
+            "Tạo tài khoản NUTEE để quản lý hồ sơ, địa chỉ giao hàng và giỏ hàng của bạn.",
         }
       : copy[mode];
   return (
@@ -90,11 +89,6 @@ export default function AuthDemoPage({ mode }: { mode: Mode }) {
       <Typography color="text.secondary">{text.description}</Typography>
       <Paper variant="outlined" sx={{ p: 3 }}>
         <Stack spacing={2}>
-          <Alert severity="info">
-            Chỉ dùng dữ liệu mẫu. Mật khẩu chung:{" "}
-            <strong>{DEMO_PASSWORD}</strong>. Không nhập thông tin đăng nhập
-            thật.
-          </Alert>
           {mode === "register" && !email && (
             <Stack
               component="form"
@@ -143,14 +137,13 @@ export default function AuthDemoPage({ mode }: { mode: Mode }) {
                 variant="contained"
                 disabled={create.isPending}
               >
-                {create.isPending ? "Đang tạo…" : "Tạo tài khoản demo"}
+                {create.isPending ? "Đang tạo…" : "Tạo tài khoản"}
               </Button>
             </Stack>
           )}
           {email && (
             <Alert severity="success" role="status">
-              Đã tạo tài khoản {email}. Đăng nhập với mật khẩu demo để gộp giỏ
-              khách.
+              Đã tạo tài khoản {email}.
             </Alert>
           )}
           <Button

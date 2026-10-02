@@ -41,8 +41,8 @@ export default function ProfilePage() {
     <Stack spacing={3} sx={{ maxWidth: 720 }}>
       <Typography variant="h1">Tài khoản của bạn</Typography>
       <Typography color="text.secondary">
-        Hồ sơ demo của {profile.data.user.name}. Thay đổi được giữ sau khi tải
-        lại trang.
+        Quản lý thông tin cá nhân và địa chỉ giao hàng của{" "}
+        {profile.data.user.name}.
       </Typography>
       <Paper variant="outlined" sx={{ p: 3 }}>
         <Stack
@@ -66,7 +66,7 @@ export default function ProfilePage() {
             slotProps={{ htmlInput: { maxLength: 80 } }}
           />
           <TextField
-            label="Email demo"
+            label="Email"
             value={profile.data.user.email}
             slotProps={{ input: { readOnly: true } }}
           />
@@ -109,7 +109,7 @@ export default function ProfilePage() {
       </Paper>
       <Stack direction="row" spacing={2} flexWrap="wrap">
         <Button component={Link} to="/account/orders" variant="outlined">
-          Đơn hàng mẫu của tôi
+          Đơn hàng của tôi
         </Button>
         <Button onClick={() => logout.mutate()} disabled={logout.isPending}>
           Đăng xuất cửa hàng

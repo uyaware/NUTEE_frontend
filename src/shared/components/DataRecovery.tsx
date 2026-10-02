@@ -44,7 +44,7 @@ export function DataRecovery() {
               const url = URL.createObjectURL(blob);
               const anchor = document.createElement("a");
               anchor.href = url;
-              anchor.download = "nutee-demo-backup.json";
+              anchor.download = "nutee-backup.json";
               anchor.click();
               URL.revokeObjectURL(url);
               setExportError("");
@@ -64,7 +64,7 @@ export function DataRecovery() {
             setOpen(true);
           }}
         >
-          Đặt lại demo
+          Đặt lại dữ liệu
         </Button>
       </Stack>
       {exportError && <Alert severity="error">{exportError}</Alert>}
@@ -75,12 +75,13 @@ export function DataRecovery() {
         }}
         aria-labelledby="reset-title"
       >
-        <DialogTitle id="reset-title">Đặt lại toàn bộ demo?</DialogTitle>
+        <DialogTitle id="reset-title">Đặt lại toàn bộ dữ liệu?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Thay đổi trong cả hai portal sẽ bị xóa. Các phiên demo và giỏ khách
-            sẽ được xóa, dữ liệu seed được tạo lại. Dữ liệu của ứng dụng khác
-            được giữ nguyên. Bạn có thể xuất dữ liệu trước khi tiếp tục.
+            Thay đổi trong cửa hàng và cổng vận hành sẽ bị xóa. Các phiên đăng
+            nhập và giỏ khách sẽ được xóa, dữ liệu ban đầu được khôi phục. Dữ
+            liệu của ứng dụng khác được giữ nguyên. Bạn có thể xuất dữ liệu
+            trước khi tiếp tục.
           </DialogContentText>
           {reset.isError && (
             <Alert severity="error" sx={{ mt: 2 }}>

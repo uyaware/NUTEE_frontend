@@ -108,7 +108,7 @@ export function StorefrontHeader() {
                   ),
                 },
               }}
-              sx={{ "& .MuiOutlinedInput-root": { height: 44, pr: 0.5 } }}
+              sx={{ "& .MuiOutlinedInput-root": { pr: 0.5 } }}
             />
           </Box>
           <Stack

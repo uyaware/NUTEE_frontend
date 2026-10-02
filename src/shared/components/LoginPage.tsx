@@ -6,12 +6,12 @@ import {
   Chip,
   IconButton,
   InputAdornment,
-  Paper,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
 import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
+import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
 import VisibilityOutlined from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlined from "@mui/icons-material/VisibilityOffOutlined";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -21,15 +21,13 @@ import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Portal } from "../types/database";
 import { services } from "../../services";
-import { DEMO_ACCOUNTS, DEMO_PASSWORD } from "../../mocks/seed";
 import { errorMessage } from "../lib/errors";
 import { safeReturnTo } from "../auth/redirect";
 import { Brand } from "./Brand";
-import { tokens } from "../theme/tokens";
 
 const schema = z.object({
   email: z.email("Nhập địa chỉ email hợp lệ."),
-  password: z.string().min(1, "Nhập mật khẩu demo."),
+  password: z.string().min(1, "Nhập mật khẩu."),
 });
 type Fields = z.infer<typeof schema>;
 export function LoginPage({ portal }: { portal: Portal }) {
@@ -41,7 +39,6 @@ export function LoginPage({ portal }: { portal: Portal }) {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<Fields>({
     resolver: zodResolver(schema),
@@ -104,8 +101,7 @@ export function LoginPage({ portal }: { portal: Portal }) {
         <Typography variant="body2">
           {management
             ? "Dành cho nhân viên & quản trị viên"
-            : "Dành cho khách hàng"}{" "}
-          · Bản demo M0–M1
+            : "Dành cho khách hàng"}
         </Typography>
         <Box
           aria-hidden
@@ -136,18 +132,29 @@ export function LoginPage({ portal }: { portal: Portal }) {
         }}
         spacing={3}
       >
-        <Brand management={management} />
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          spacing={2}
+          useFlexGap
+          flexWrap="wrap"
+        >
+          <Brand management={management} />
+          <Button component={Link} to="/" startIcon={<ArrowBackRounded />}>
+            Về trang chủ
+          </Button>
+        </Stack>
         <Box>
           <Typography variant="h2" component="h1">
             {management ? "Đăng nhập vận hành" : "Đăng nhập cửa hàng"}
           </Typography>
           <Typography color="text.secondary" sx={{ mt: 1 }}>
-            Sử dụng tài khoản demo để khám phá nền tảng.
+            {management
+              ? "Đăng nhập để quản lý cửa hàng NUTEE."
+              : "Đăng nhập để quản lý tài khoản và giỏ hàng của bạn."}
           </Typography>
         </Box>
-        <Alert severity="info">
-          Phiên mô phỏng, không gửi email. Chỉ dùng thông tin demo bên dưới.
-        </Alert>
         <Stack
           component="form"
           onSubmit={handleSubmit((fields) => login.mutate(fields))}
@@ -163,7 +170,7 @@ export function LoginPage({ portal }: { portal: Portal }) {
             helperText={errors.email?.message}
           />
           <TextField
-            label="Mật khẩu demo"
+            label="Mật khẩu"
             type={showPassword ? "text" : "password"}
             autoComplete="current-password"
             {...register("password")}
@@ -202,51 +209,13 @@ export function LoginPage({ portal }: { portal: Portal }) {
             {login.isPending ? "Đang đăng nhập…" : "Đăng nhập"}
           </Button>
         </Stack>
-        <Paper
-          variant="outlined"
-          sx={{ p: 2.5, bgcolor: tokens.color.blueTint }}
-        >
-          <Typography variant="subtitle2">Tài khoản trải nghiệm</Typography>
-          <Typography variant="body2" sx={{ my: 1 }}>
-            Mật khẩu chung: <strong>{DEMO_PASSWORD}</strong>
-          </Typography>
-          <Stack spacing={1}>
-            {DEMO_ACCOUNTS.filter((a) =>
-              management ? a.role !== "customer" : a.role === "customer",
-            ).map((a) => (
-              <Button
-                key={a.email}
-                variant="outlined"
-                sx={{
-                  justifyContent: "space-between",
-                  textAlign: "left",
-                  flexWrap: "wrap",
-                }}
-                onClick={() => {
-                  setValue("email", a.email, { shouldValidate: true });
-                  setValue("password", DEMO_PASSWORD, { shouldValidate: true });
-                  login.reset();
-                }}
-              >
-                <span>{a.label}</span>
-                <Typography
-                  component="span"
-                  variant="caption"
-                  sx={{ overflowWrap: "anywhere" }}
-                >
-                  {a.email}
-                </Typography>
-              </Button>
-            ))}
-          </Stack>
-        </Paper>
         {!management && (
           <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
             <Button
               component={Link}
               to={`/register?${new URLSearchParams({ returnTo: safeReturnTo(params.get("returnTo"), portal) })}`}
             >
-              Tạo tài khoản demo
+              Tạo tài khoản
             </Button>
             <Button component={Link} to="/forgot-password">
               Quên mật khẩu

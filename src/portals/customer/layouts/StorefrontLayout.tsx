@@ -83,8 +83,7 @@ export function StorefrontLayout() {
           </Stack>
           <Divider sx={{ my: 3 }} />
           <Typography variant="caption" color="text.secondary">
-            © {new Date().getFullYear()} NUTEE. Khám phá danh mục công nghệ
-            trong bản demo.
+            © {new Date().getFullYear()} NUTEE. Không gian công nghệ của bạn.
           </Typography>
         </Container>
       </Box>

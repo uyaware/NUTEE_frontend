@@ -144,13 +144,19 @@ export default function CatalogPage() {
             q: String(new FormData(event.currentTarget).get("q") ?? ""),
           });
         }}
-        sx={{ display: "flex", gap: 1 }}
+        sx={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 1,
+          width: { xs: "100%", md: "50%" },
+        }}
       >
         <TextField
           name="q"
           label="Tìm tên, mã hoặc cấu hình"
           defaultValue={filters.q}
           slotProps={{ htmlInput: { maxLength: 160 } }}
+          sx={{ flex: 1, minWidth: 0 }}
         />
         <Button type="submit" variant="contained" sx={{ flexShrink: 0 }}>
           Tìm kiếm

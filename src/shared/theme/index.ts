@@ -50,10 +50,25 @@ const base: ThemeOptions = {
   components: {
     MuiButton: {
       defaultProps: { disableElevation: true },
-      styleOverrides: { root: { minHeight: 44, paddingInline: 16 } },
+      styleOverrides: {
+        root: ({ ownerState }) => ({
+          minHeight:
+            ownerState.size === "large"
+              ? tokens.layout.largeControlHeight
+              : tokens.layout.controlHeight,
+          paddingInline: 16,
+          lineHeight: 1.5,
+        }),
+      },
     },
     MuiIconButton: {
-      styleOverrides: { root: { minWidth: 44, minHeight: 44 } },
+      styleOverrides: {
+        root: {
+          width: tokens.layout.controlHeight,
+          height: tokens.layout.controlHeight,
+          flexShrink: 0,
+        },
+      },
     },
     MuiPaper: {
       defaultProps: { elevation: 0 },
@@ -72,11 +87,44 @@ const base: ThemeOptions = {
       },
     },
     MuiInputLabel: {
-      styleOverrides: { root: { fontSize: tokens.typography.body } },
+      styleOverrides: {
+        root: ({ ownerState }) => ({
+          fontSize: tokens.typography.body,
+          ...(ownerState.variant === "outlined" && !ownerState.shrink
+            ? {
+                transform: `translate(14px, ${ownerState.size === "small" ? 12 : 16}px) scale(1)`,
+              }
+            : {}),
+        }),
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: ({ ownerState }) => ({
+          ...(!ownerState.multiline
+            ? {
+                height:
+                  ownerState.size === "small"
+                    ? tokens.layout.controlHeight
+                    : tokens.layout.largeControlHeight,
+              }
+            : {}),
+        }),
+        input: ({ ownerState }) => ({
+          ...(!ownerState.multiline
+            ? { height: "100%", boxSizing: "border-box", paddingBlock: 0 }
+            : {}),
+        }),
+      },
     },
     MuiMenuItem: {
       styleOverrides: {
         root: { fontSize: tokens.typography.body, minHeight: 44 },
+      },
+    },
+    MuiSelect: {
+      styleOverrides: {
+        select: { display: "flex", alignItems: "center" },
       },
     },
     MuiCardContent: {

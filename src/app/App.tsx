@@ -23,10 +23,10 @@ const customerTitles: Record<string, string> = {
   "/cart": "Giỏ hàng",
   "/account/addresses": "Địa chỉ giao hàng",
   "/account/security": "Bảo mật tài khoản",
-  "/register": "Đăng ký demo",
-  "/verify-email": "Xác minh email demo",
-  "/forgot-password": "Quên mật khẩu demo",
-  "/reset-password": "Đặt lại mật khẩu demo",
+  "/register": "Đăng ký",
+  "/verify-email": "Xác minh email",
+  "/forgot-password": "Quên mật khẩu",
+  "/reset-password": "Đặt lại mật khẩu",
 };
 
 export default function App() {
@@ -107,7 +107,7 @@ export default function App() {
         >
           <Stack spacing={3}>
             <Typography variant="h2" component="h1">
-              Cần khôi phục dữ liệu demo
+              Cần khôi phục dữ liệu
             </Typography>
             <Alert severity="error">{errorMessage(ready.error)}</Alert>
             <Button onClick={() => void ready.refetch()} variant="outlined">

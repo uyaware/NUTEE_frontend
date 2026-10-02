@@ -24,6 +24,7 @@ import { money } from "../../../shared/lib/format";
 import { MAX_CART_QUANTITY } from "../../../shared/types/cart";
 import { DataRecovery } from "../../../shared/components/DataRecovery";
 import { ServiceError } from "../../../shared/lib/errors";
+import { tokens } from "../../../shared/theme/tokens";
 
 const issueLabels = {
   hidden: "Sản phẩm đã ngừng bán",
@@ -158,7 +159,17 @@ export default function CartPage() {
                     alignItems="center"
                     justifyContent="space-between"
                   >
-                    <Stack direction="row" alignItems="center" spacing={1}>
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      sx={{
+                        height: tokens.layout.controlHeight,
+                        boxShadow: (theme) =>
+                          `inset 0 0 0 1px ${theme.palette.divider}`,
+                        borderRadius: 1,
+                        "& .MuiIconButton-root": { borderRadius: 1 },
+                      }}
+                    >
                       <IconButton
                         aria-label={`Giảm số lượng ${item.name}`}
                         disabled={
@@ -247,9 +258,6 @@ export default function CartPage() {
                   Đăng nhập và gộp giỏ
                 </Button>
               )}
-              <Alert severity="info">
-                Đặt hàng chưa khả dụng trong bản demo này.
-              </Alert>
               <Button component={Link} to="/products" variant="outlined">
                 Tiếp tục mua sắm
               </Button>

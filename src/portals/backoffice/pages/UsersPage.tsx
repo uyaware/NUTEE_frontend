@@ -28,12 +28,12 @@ export default function UsersPage() {
   return (
     <Stack spacing={3}>
       <BoxTitle
-        title="Tài khoản demo"
-        description="Danh sách chỉ đọc dành cho admin. Quản lý tài khoản đầy đủ nằm ở M6."
+        title="Tài khoản"
+        description="Danh sách tài khoản khách hàng, nhân viên và quản trị viên."
       />
       <Paper variant="outlined">
         <TableContainer>
-          <Table sx={{ minWidth: 570 }} aria-label="Tài khoản demo">
+          <Table sx={{ minWidth: 570 }} aria-label="Tài khoản">
             <TableHead>
               <TableRow>
                 <TableCell>Tên</TableCell>

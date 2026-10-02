@@ -37,19 +37,19 @@ export function ManagementLayout() {
     { to: "/management", label: "Tổng quan", icon: DashboardOutlined },
     {
       to: "/management/orders",
-      label: "Đơn hàng mẫu",
+      label: "Đơn hàng",
       icon: ReceiptLongOutlined,
     },
     ...(hasPermission(user.role, "products:write")
       ? [
           {
             to: "/management/products",
-            label: "Sản phẩm demo",
+            label: "Sản phẩm",
             icon: Inventory2Outlined,
           },
           {
             to: "/management/users",
-            label: "Tài khoản demo",
+            label: "Tài khoản",
             icon: PeopleOutlineRounded,
           },
         ]
@@ -175,7 +175,7 @@ export function ManagementLayout() {
               <Typography fontWeight={600}>NUTEE Workspace</Typography>
             </Stack>
             <Typography variant="caption" color="text.secondary">
-              M0–M1 · Local demo
+              Cổng vận hành
             </Typography>
           </Toolbar>
         </AppBar>

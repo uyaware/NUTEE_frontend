@@ -40,8 +40,8 @@ export function OrdersPage({
     <Stack spacing={3}>
       {!compact && (
         <BoxTitle
-          title={portal === "customer" ? "Đơn hàng của bạn" : "Đơn hàng mẫu"}
-          description="Danh sách đọc từ seed. Luồng tạo và xử lý đơn được triển khai ở M4–M5."
+          title={portal === "customer" ? "Đơn hàng của bạn" : "Đơn hàng"}
+          description="Theo dõi thông tin và trạng thái đơn hàng."
         />
       )}
       <Paper variant="outlined">
@@ -119,7 +119,7 @@ export function OrderDetailPage({ portal }: { portal: Portal }) {
     <Stack spacing={3}>
       <BoxTitle
         title={`Đơn ${order.id.toUpperCase()}`}
-        description="Thông tin và địa chỉ được snapshot tại thời điểm mua trong seed."
+        description="Thông tin người nhận và địa chỉ giao hàng tại thời điểm mua."
       />
       <Paper variant="outlined" sx={{ p: 3 }}>
         <Stack spacing={2}>
@@ -130,7 +130,7 @@ export function OrderDetailPage({ portal }: { portal: Portal }) {
             Tổng thanh toán: <strong>{money(order.total)}</strong>
           </Typography>
           <Typography>
-            Thanh toán mẫu: {order.paymentMethod.toUpperCase()} ·{" "}
+            Thanh toán: {order.paymentMethod.toUpperCase()} ·{" "}
             {order.paymentStatus}
           </Typography>
           <Typography variant="h3" component="h2">

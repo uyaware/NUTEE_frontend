@@ -80,11 +80,9 @@ export function createServices(
         };
         await repository.update(db.revision, (current) => {
           if (current.users.some((u) => u.email.toLowerCase() === user.email))
-            throw new ServiceError(
-              "VALIDATION",
-              "Email đã được dùng trong bản demo.",
-              { email: "Email đã được dùng." },
-            );
+            throw new ServiceError("VALIDATION", "Email đã được sử dụng.", {
+              email: "Email đã được dùng.",
+            });
           current.users.push(user);
           current.carts.push({ id: crypto.randomUUID(), userId: user.id });
         });
@@ -98,8 +96,8 @@ export function createServices(
         if (!user || password !== DEMO_PASSWORD)
           throw new ServiceError(
             "VALIDATION",
-            "Email hoặc mật khẩu demo không đúng.",
-            { password: "Kiểm tra thông tin đăng nhập demo." },
+            "Email hoặc mật khẩu không đúng.",
+            { password: "Kiểm tra thông tin đăng nhập." },
           );
         if (!user.isActive || !belongsToPortal(user.role, portal))
           throw new ServiceError(

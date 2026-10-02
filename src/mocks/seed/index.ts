@@ -51,7 +51,7 @@ export function createSeed(now = new Date()): Database {
       userId: `customer-${n}`,
       recipient: n === 1 ? "Minh Anh" : "Hoàng Nam",
       phone: "0900000000",
-      line: `${n} Đường Demo, Phường Bến Thành, TP. Hồ Chí Minh`,
+      line: `${n} Đường Lê Lợi, Phường Bến Thành, TP. Hồ Chí Minh`,
       isDefault: true,
     })),
     brands: ["Apple", "Samsung", "ASUS", "Lenovo", "Logitech", "Keychron"].map(
@@ -290,7 +290,7 @@ export function createSeed(now = new Date()): Database {
       orderId,
       amount: p.price - discount,
       status: paymentStatus,
-      reference: `DEMO-${i + 1}`,
+      reference: `NUTEE-${i + 1}`,
       createdAt: at(-20 + i),
     });
     if (discount)
@@ -307,7 +307,7 @@ export function createSeed(now = new Date()): Database {
         productId: p.id,
         orderItemId: `oi-${i + 1}`,
         rating: 5,
-        comment: "Dữ liệu mẫu: sản phẩm đáp ứng tốt nhu cầu sử dụng.",
+        comment: "Sản phẩm đáp ứng tốt nhu cầu sử dụng.",
         createdAt: at(-5),
       });
       const n = db.afterSaleRequests.length;
@@ -327,7 +327,7 @@ export function createSeed(now = new Date()): Database {
         orderItemId: `oi-${i + 1}`,
         type: "warranty",
         quantity: 1,
-        reason: "Yêu cầu kiểm tra thiết bị (dữ liệu demo)",
+        reason: "Yêu cầu kiểm tra thiết bị",
         status: requestStatus,
         createdAt: at(-3),
         history: [
@@ -335,7 +335,7 @@ export function createSeed(now = new Date()): Database {
             status: requestStatus,
             at: at(-2),
             actorId: "staff-1",
-            note: "Lịch sử xử lý mẫu",
+            note: "Đã cập nhật trạng thái yêu cầu",
           },
         ],
       });

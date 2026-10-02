@@ -72,9 +72,6 @@ function ProductGallery({ product }: { product: ProductDetail }) {
           </Button>
         ))}
       </Stack>
-      <Typography variant="caption" color="text.secondary">
-        Ảnh minh họa cho dữ liệu mẫu.
-      </Typography>
     </Stack>
   );
 }
@@ -265,9 +262,6 @@ export default function ProductDetailPage() {
           />
           <Typography>
             {product.specifications[0]?.value ?? "Thông số đang được cập nhật."}
-          </Typography>
-          <Typography color="text.secondary">
-            Sản phẩm và giá là dữ liệu mẫu. Bản demo hiện chưa hỗ trợ đặt hàng.
           </Typography>
           <AddToCart
             key={product.id}

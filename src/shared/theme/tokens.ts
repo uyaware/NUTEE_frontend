@@ -17,6 +17,8 @@ export const tokens = {
   radius: { small: 8, medium: 12, large: 24 },
   spacing: { unit: 8, section: 32, gutter: 24 },
   layout: {
+    controlHeight: 44,
+    largeControlHeight: 52,
     storefrontHeaderHeight: 80,
     storefrontMobileHeaderHeight: 124,
     filterWidth: 280,

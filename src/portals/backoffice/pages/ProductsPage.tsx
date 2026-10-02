@@ -68,12 +68,12 @@ export default function ProductsPage() {
   return (
     <Stack spacing={3}>
       <BoxTitle
-        title="Sản phẩm demo"
-        description="Editor tối thiểu để kiểm chứng persistence và đồng bộ. CRUD đầy đủ triển khai ở M6."
+        title="Sản phẩm"
+        description="Quản lý tên, giá và trạng thái hiển thị của sản phẩm."
       />
       <Paper variant="outlined">
         <TableContainer>
-          <Table sx={{ minWidth: 650 }} aria-label="Sản phẩm demo">
+          <Table sx={{ minWidth: 650 }} aria-label="Sản phẩm">
             <TableHead>
               <TableRow>
                 <TableCell>Sản phẩm</TableCell>
@@ -127,7 +127,7 @@ export default function ProductsPage() {
         fullWidth
         maxWidth="sm"
       >
-        <DialogTitle>Sửa sản phẩm demo</DialogTitle>
+        <DialogTitle>Sửa sản phẩm</DialogTitle>
         {edit && (
           <Stack
             key={`${edit.product.id}:${edit.revision}`}

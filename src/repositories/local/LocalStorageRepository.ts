@@ -66,7 +66,7 @@ export class LocalStorageRepository
     } catch {
       throw new ServiceError(
         "CORRUPT_DATA",
-        "Dữ liệu demo không phải JSON hợp lệ. Xuất bản sao trước khi đặt lại demo.",
+        "Dữ liệu không hợp lệ. Xuất bản sao trước khi đặt lại dữ liệu.",
       );
     }
     if (
@@ -235,7 +235,7 @@ export class LocalStorageRepository
     } catch {
       throw new ServiceError(
         "CORRUPT_DATA",
-        "Phiên demo bị lỗi. Đăng xuất portal này rồi đăng nhập lại.",
+        "Phiên đăng nhập bị lỗi. Vui lòng đăng xuất rồi đăng nhập lại.",
       );
     }
   }

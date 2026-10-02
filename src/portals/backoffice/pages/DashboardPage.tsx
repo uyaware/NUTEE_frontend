@@ -1,4 +1,4 @@
-import { Alert, Box, Button, Paper, Stack, Typography } from "@mui/material";
+import { Box, Button, Paper, Stack, Typography } from "@mui/material";
 import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -28,39 +28,39 @@ export default function DashboardPage() {
           {
             label: "Doanh thu đã thanh toán",
             value: money(data.paidRevenue ?? 0),
-            note: "Tổng đơn paid, không gồm đơn hủy",
+            note: "Đơn đã thanh toán, không gồm đơn hủy",
           },
           {
             label: "Tổng đơn hàng",
             value: data.orders,
-            note: "Tất cả đơn trong seed",
+            note: "Tất cả đơn hàng",
           },
           {
             label: "Chờ xác nhận",
             value: data.pending,
-            note: "Trạng thái pending",
+            note: "Đơn đang chờ xác nhận",
           },
           {
             label: "Sản phẩm công khai",
             value: data.products,
-            note: "Trạng thái published",
+            note: "Sản phẩm đang hiển thị tại cửa hàng",
           },
         ]
       : [
           {
             label: "Tổng đơn vận hành",
             value: data.orders,
-            note: "Phạm vi demo: toàn bộ đơn",
+            note: "Toàn bộ đơn hàng",
           },
           {
             label: "Chờ xác nhận",
             value: data.pending,
-            note: "Trạng thái pending",
+            note: "Đơn đang chờ xác nhận",
           },
           {
             label: "Hậu mãi cần xem",
             value: data.afterSales,
-            note: "Pending và reviewing",
+            note: "Yêu cầu đang chờ hoặc đang được kiểm tra",
           },
         ];
   return (
@@ -92,10 +92,6 @@ export default function DashboardPage() {
           Xem đơn hàng
         </Button>
       </Stack>
-      <Alert severity="info">
-        Bản nền tảng M0–M1. Số liệu được tính từ dữ liệu seed dùng chung với cửa
-        hàng.
-      </Alert>
       <Box
         sx={{
           display: "grid",
@@ -148,8 +144,8 @@ export default function DashboardPage() {
           Dữ liệu được kết nối
         </Typography>
         <Typography variant="body2" sx={{ mt: 1 }}>
-          Thay đổi tên, giá hoặc trạng thái sản phẩm bằng tài khoản admin, rồi
-          mở cửa hàng ở tab khác để kiểm tra đồng bộ.
+          Thông tin sản phẩm và đơn hàng được đồng bộ giữa cửa hàng và cổng vận
+          hành.
         </Typography>
       </Paper>
     </Stack>

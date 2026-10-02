@@ -68,14 +68,6 @@ export default function HomePage() {
           >
             Khám phá sản phẩm
           </Button>
-          <Typography
-            variant="caption"
-            display="block"
-            sx={{ mt: 2 }}
-            color="text.secondary"
-          >
-            Sản phẩm và giá là dữ liệu mẫu
-          </Typography>
         </Box>
         <Box
           sx={{
