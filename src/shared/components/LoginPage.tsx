@@ -51,10 +51,16 @@ export function LoginPage({ portal }: { portal: Portal }) {
       await client.cancelQueries({ queryKey: [portal] });
       client.removeQueries({ queryKey: [portal] });
       client.setQueryData(["session", portal], user);
-      navigate(safeReturnTo(params.get("returnTo"), portal), {
-        replace: true,
-        state: { cartMergeNotices: user.cartMergeNotices },
-      });
+      const returnTo = safeReturnTo(params.get("returnTo"), portal);
+      navigate(
+        portal === "customer" && user.profileCompleted === false
+          ? `/account/setup?${new URLSearchParams({ returnTo })}`
+          : returnTo,
+        {
+          replace: true,
+          state: { cartMergeNotices: user.cartMergeNotices },
+        },
+      );
     },
   });
   return (

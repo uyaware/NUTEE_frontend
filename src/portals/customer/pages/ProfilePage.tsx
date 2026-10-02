@@ -2,22 +2,21 @@ import { useState } from "react";
 import {
   Alert,
   Button,
+  Divider,
   Paper,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
-import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { services } from "../../../services";
-import { useLogout, useSession } from "../../../shared/auth/useSession";
+import { useSession } from "../../../shared/auth/useSession";
 import { ErrorState, LoadingState } from "../../../shared/components/Feedback";
 import { errorMessage } from "../../../shared/lib/errors";
 
 export default function ProfilePage() {
   const session = useSession("customer");
   const client = useQueryClient();
-  const logout = useLogout("customer");
   const profile = useQuery({
     queryKey: ["customer", session.data?.id, "profile"],
     queryFn: services.profile.get,
@@ -38,15 +37,26 @@ export default function ProfilePage() {
       <ErrorState error={profile.error} retry={() => void profile.refetch()} />
     );
   return (
-    <Stack spacing={3} sx={{ maxWidth: 720 }}>
-      <Typography variant="h1">Tài khoản của bạn</Typography>
-      <Typography color="text.secondary">
-        Quản lý thông tin cá nhân và địa chỉ giao hàng của{" "}
-        {profile.data.user.name}.
-      </Typography>
-      <Paper variant="outlined" sx={{ p: 3 }}>
+    <Stack spacing={3}>
+      <Stack spacing={1}>
+        <Typography variant="h1">Hồ sơ cá nhân</Typography>
+        <Typography color="text.secondary">
+          Cập nhật thông tin để NUTEE hỗ trợ bạn tốt hơn.
+        </Typography>
+      </Stack>
+      <Paper variant="outlined">
+        <Stack spacing={0.5} sx={{ p: { xs: 2.5, sm: 3 } }}>
+          <Typography variant="h3" component="h2">
+            Thông tin cơ bản
+          </Typography>
+          <Typography color="text.secondary">
+            Thông tin gắn với tài khoản của bạn.
+          </Typography>
+        </Stack>
+        <Divider />
         <Stack
           spacing={2}
+          sx={{ p: { xs: 2.5, sm: 3 } }}
           component="form"
           onSubmit={(event) => {
             event.preventDefault();
@@ -55,6 +65,7 @@ export default function ProfilePage() {
         >
           <TextField
             label="Tên hiển thị"
+            autoComplete="name"
             value={edit?.name ?? profile.data.user.name}
             onChange={(event) => {
               setEdit({
@@ -69,6 +80,7 @@ export default function ProfilePage() {
             label="Email"
             value={profile.data.user.email}
             slotProps={{ input: { readOnly: true } }}
+            helperText="Email được sử dụng để đăng nhập."
           />
           {save.isError && (
             <Alert severity="error">
@@ -89,33 +101,12 @@ export default function ProfilePage() {
             type="submit"
             variant="contained"
             disabled={save.isPending || !edit}
+            sx={{ alignSelf: { xs: "stretch", sm: "flex-end" }, minWidth: 160 }}
           >
             {save.isPending ? "Đang lưu…" : "Lưu hồ sơ"}
           </Button>
         </Stack>
       </Paper>
-      <Paper variant="outlined" sx={{ p: 3 }}>
-        <Typography variant="h3" component="h2" sx={{ mb: 2 }}>
-          Địa chỉ giao hàng
-        </Typography>
-        {profile.data.addresses.map((a) => (
-          <Typography key={a.id}>
-            {a.recipient} · {a.line}
-          </Typography>
-        ))}
-        <Button component={Link} to="/account/addresses" sx={{ mt: 2 }}>
-          Quản lý địa chỉ
-        </Button>
-      </Paper>
-      <Stack direction="row" spacing={2} flexWrap="wrap">
-        <Button component={Link} to="/account/orders" variant="outlined">
-          Đơn hàng của tôi
-        </Button>
-        <Button onClick={() => logout.mutate()} disabled={logout.isPending}>
-          Đăng xuất cửa hàng
-        </Button>
-      </Stack>
-      {logout.isError && <ErrorState error={logout.error} />}
     </Stack>
   );
 }

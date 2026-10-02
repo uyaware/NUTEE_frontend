@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+﻿import { test, expect } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
 async function login(
@@ -8,7 +8,7 @@ async function login(
 ) {
   await page.goto(`/login?${new URLSearchParams({ returnTo })}`);
   await page.getByLabel("Email", { exact: true }).fill(email);
-  await page.getByLabel("Mật khẩu demo", { exact: true }).fill("Nutee@123");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("Nutee@123");
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`${returnTo}$`));
 }
@@ -37,7 +37,7 @@ test("guest cart persists, login merges once, quantity/remove persist, logout an
   ).toHaveText("2");
   await page.getByRole("link", { name: "Đăng nhập và gộp giỏ" }).click();
   await page.getByLabel("Email", { exact: true }).fill("customer@nutee.demo");
-  await page.getByLabel("Mật khẩu demo", { exact: true }).fill("Nutee@123");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("Nutee@123");
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(page).toHaveURL(/\/cart$/);
   await expect(
@@ -100,7 +100,7 @@ test("guest mutations invalidate another tab, and admin price/hide changes reval
   const admin = await context.newPage();
   await admin.goto("/management/login");
   await admin.getByLabel("Email", { exact: true }).fill("admin@nutee.demo");
-  await admin.getByLabel("Mật khẩu demo", { exact: true }).fill("Nutee@123");
+  await admin.getByLabel("Mật khẩu", { exact: true }).fill("Nutee@123");
   await admin.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(admin).toHaveURL(/\/management$/);
   await admin.goto("/management/products");
@@ -212,45 +212,113 @@ test("a stale address editor retains draft and reports conflict after a change i
   ).toBeVisible();
 });
 
-test("registration creates a persistent customer and auth demo screens explain fixed credentials", async ({
+test("registration validates passwords, requires profile completion, preserves cart and uses personal credentials", async ({
   page,
 }) => {
   await addGuest(page, "1");
   await page.goto("/register?returnTo=%2Fcart");
-  await page.getByLabel("Tên hiển thị").fill("Khách demo mới");
   await page.getByLabel("Email", { exact: true }).fill("new@nutee.demo");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("Personal@456");
   await page
-    .getByRole("button", { name: "Tạo tài khoản demo", exact: true })
+    .getByLabel("Xác nhận mật khẩu", { exact: true })
+    .fill("Different@456");
+  await page
+    .getByRole("button", { name: "Tạo tài khoản", exact: true })
     .click();
-  await expect(page.getByRole("status")).toContainText(
-    "Đã tạo tài khoản new@nutee.demo",
-  );
-  await page.getByRole("link", { name: "Đến đăng nhập", exact: true }).click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Kiểm tra các trường sau" }),
+  ).toBeFocused();
+  await page
+    .getByRole("link", { name: "Mật khẩu xác nhận không khớp." })
+    .click();
+  await expect(
+    page.getByLabel("Xác nhận mật khẩu", { exact: true }),
+  ).toBeFocused();
+  await page
+    .getByLabel("Xác nhận mật khẩu", { exact: true })
+    .fill("Personal@456");
+  await page
+    .getByRole("button", { name: "Tạo tài khoản", exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/account\/setup\?returnTo=%2Fcart$/);
+  await expect(page.getByRole("status")).toContainText("new@nutee.demo");
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Hoàn thiện thông tin" }),
+  ).toBeVisible();
+  await page.goto("/account/profile");
+  await expect(page).toHaveURL(/\/account\/setup/);
+  await page.goto("/products");
+  await expect(page).toHaveURL(/\/account\/setup/);
+  await page.goto("/account/setup?returnTo=%2Fcart");
+  await page.getByRole("button", { name: "Hoàn tất đăng ký" }).click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Kiểm tra các trường sau" }),
+  ).toBeFocused();
+  await page.getByLabel("Họ và tên").fill("Khách mới");
+  await page.getByLabel("Số điện thoại").fill("0912345678");
+  await page
+    .getByLabel("Địa chỉ giao hàng")
+    .fill("123 Đường Mẫu, TP. Hồ Chí Minh");
+  await page.getByRole("button", { name: "Hoàn tất đăng ký" }).click();
+  await expect(page).toHaveURL(/\/cart$/);
+  await expect(
+    page.getByLabel("Số lượng MacBook Air M3", { exact: true }),
+  ).toHaveText("1");
+  await page.goto("/account/profile");
+  await expect(page.getByLabel("Tên hiển thị")).toHaveValue("Khách mới");
+  await page.reload();
+  await expect(page.getByLabel("Tên hiển thị")).toHaveValue("Khách mới");
+  await page
+    .getByRole("navigation", { name: "Tài khoản khách hàng" })
+    .getByRole("link", { name: "Địa chỉ", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Khách mới", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("123 Đường Mẫu, TP. Hồ Chí Minh", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText("Mặc định", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Đăng xuất cửa hàng" }).click();
+  await page.goto("/login?returnTo=%2Fcart");
   await page.getByLabel("Email", { exact: true }).fill("new@nutee.demo");
-  await page.getByLabel("Mật khẩu demo", { exact: true }).fill("Nutee@123");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("Nutee@123");
+  await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText(
+    "Email hoặc mật khẩu không đúng",
+  );
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("Personal@456");
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
   await expect(page).toHaveURL(/\/cart$/);
   await expect(
     page.getByLabel("Số lượng MacBook Air M3", { exact: true }),
   ).toHaveText("1");
   await page.goto("/account/profile");
-  await expect(page.getByLabel("Tên hiển thị")).toHaveValue("Khách demo mới");
+  await expect(page.getByLabel("Tên hiển thị")).toHaveValue("Khách mới");
   await page.reload();
-  await expect(page.getByLabel("Tên hiển thị")).toHaveValue("Khách demo mới");
+  await expect(page.getByLabel("Tên hiển thị")).toHaveValue("Khách mới");
   await page.goto("/verify-email");
   await expect(
-    page.getByRole("heading", { name: "Xác minh email demo" }),
+    page.getByRole("heading", { name: "Xác minh email" }),
   ).toBeVisible();
   await page.goto("/forgot-password");
-  await expect(page.getByText(/chưa gửi email hoặc liên kết/)).toBeVisible();
+  await expect(
+    page.getByText(/Khôi phục mật khẩu qua email hiện chưa khả dụng/),
+  ).toBeVisible();
   await page.goto("/reset-password");
   await expect(
-    page.getByRole("heading", { name: "Đặt lại mật khẩu demo" }),
+    page.getByRole("heading", { name: "Đặt lại mật khẩu" }),
   ).toBeVisible();
   await page.goto("/account/security");
   await expect(
-    page.getByRole("heading", { name: "Bảo mật tài khoản" }),
-  ).toBeVisible();
+    page.getByLabel("Bảo mật tài khoản", { exact: true }),
+  ).toBeEmpty();
+  await expect(
+    page
+      .getByRole("navigation", { name: "Tài khoản khách hàng" })
+      .getByRole("link", { name: "Bảo mật", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
 });
 
 test("out-of-stock and invalid quantities block add, corrupt guest cart stays intact", async ({
@@ -286,6 +354,15 @@ for (const width of [375, 768, 1024, 1440]) {
       ),
     ).toBe(true);
     await login(page, "customer@nutee.demo", "/account/addresses");
+    const sidebar = await page.getByRole("complementary").boundingBox();
+    const content = await page
+      .getByRole("heading", { name: "Địa chỉ giao hàng", exact: true })
+      .boundingBox();
+    expect(sidebar).not.toBeNull();
+    expect(content).not.toBeNull();
+    if (width >= 900)
+      expect(sidebar!.x + sidebar!.width).toBeLessThan(content!.x);
+    else expect(sidebar!.y + sidebar!.height).toBeLessThan(content!.y);
     await page
       .getByRole("button", { name: "Thêm địa chỉ", exact: true })
       .click();
@@ -302,3 +379,38 @@ for (const width of [375, 768, 1024, 1440]) {
     ).toBeFocused();
   });
 }
+
+test("unfinished registration resumes after logout and login without creating another account", async ({
+  page,
+}) => {
+  await page.goto("/register");
+  await page.getByLabel("Email", { exact: true }).fill("unfinished@nutee.demo");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("Personal@456");
+  await page
+    .getByLabel("Xác nhận mật khẩu", { exact: true })
+    .fill("Personal@456");
+  await page
+    .getByRole("button", { name: "Tạo tài khoản", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Hoàn thiện thông tin" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Đăng xuất", exact: true }).click();
+  await page.goto("/login?returnTo=%2Faccount%2Forders");
+  await page.getByLabel("Email", { exact: true }).fill("unfinished@nutee.demo");
+  await page.getByLabel("Mật khẩu", { exact: true }).fill("Personal@456");
+  await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
+  await expect(page).toHaveURL(
+    /\/account\/setup\?returnTo=%2Faccount%2Forders$/,
+  );
+  await page.getByLabel("Họ và tên").fill("Khách mới");
+  await page.getByLabel("Số điện thoại").fill("0912345678");
+  await page
+    .getByLabel("Địa chỉ giao hàng")
+    .fill("123 Đường Mẫu, TP. Hồ Chí Minh");
+  await page.getByRole("button", { name: "Hoàn tất đăng ký" }).click();
+  await expect(page).toHaveURL(/\/account\/orders$/);
+  await expect(
+    page.getByRole("heading", { name: "Chưa có đơn hàng" }),
+  ).toBeVisible();
+});

@@ -14,8 +14,10 @@ import type { Services } from "./contracts";
 import { createCartService, mergeGuestItems } from "./cart";
 import {
   addressInputSchema,
-  registrationSchema,
+  registrationCredentialsSchema,
+  profileSetupSchema,
 } from "../shared/types/account";
+import { createPassword, verifyPassword } from "./password";
 
 export function createServices(
   repository: DataRepository & GuestCartRepository,
@@ -62,19 +64,43 @@ export function createServices(
       );
     return user;
   }
+  async function establishSession(user: User, portal: Portal) {
+    let cartMergeNotices: string[] = [];
+    if (portal === "customer")
+      await repository.mergeGuest(user.id, (current, guest) => {
+        cartMergeNotices = mergeGuestItems(current, guest, user.id);
+      });
+    sessions.set(portal, {
+      userId: user.id,
+      expiresAt: Date.now() + 8 * 3600000,
+    });
+    return { ...user, cartMergeNotices };
+  }
   return {
     auth: {
-      async register(name, email) {
-        const parsed = registrationSchema.safeParse({ name, email });
+      async register(email, password) {
+        const parsed = registrationCredentialsSchema.safeParse({
+          email,
+          password,
+        });
         if (!parsed.success)
           throw new ServiceError(
             "VALIDATION",
-            "Kiểm tra tên và email đăng ký.",
+            "Kiểm tra email và mật khẩu đăng ký.",
+            Object.fromEntries(
+              parsed.error.issues.map((issue) => [
+                String(issue.path[0]),
+                issue.message,
+              ]),
+            ),
           );
+        const credential = await createPassword(parsed.data.password);
         const db = await repository.read();
         const user: User = {
           id: crypto.randomUUID(),
-          ...parsed.data,
+          email: parsed.data.email,
+          name: "",
+          profileCompleted: false,
           role: "customer",
           isActive: true,
         };
@@ -84,16 +110,28 @@ export function createServices(
               email: "Email đã được dùng.",
             });
           current.users.push(user);
+          current.credentials.push({
+            id: crypto.randomUUID(),
+            userId: user.id,
+            ...credential,
+          });
           current.carts.push({ id: crypto.randomUUID(), userId: user.id });
         });
-        return user;
+        return establishSession(user, "customer");
       },
       async login(portal, email, password) {
         const db = await repository.read();
         const user = db.users.find(
           (u) => u.email.toLowerCase() === email.trim().toLowerCase(),
         );
-        if (!user || password !== DEMO_PASSWORD)
+        const credential =
+          user && db.credentials.find((c) => c.userId === user.id);
+        if (
+          !user ||
+          !(credential
+            ? await verifyPassword(password, credential)
+            : password === DEMO_PASSWORD)
+        )
           throw new ServiceError(
             "VALIDATION",
             "Email hoặc mật khẩu không đúng.",
@@ -106,16 +144,7 @@ export function createServices(
               ? "Portal cửa hàng chỉ dành cho tài khoản customer."
               : "Portal vận hành chỉ dành cho staff hoặc admin.",
           );
-        let cartMergeNotices: string[] = [];
-        if (portal === "customer")
-          await repository.mergeGuest(user.id, (current, guest) => {
-            cartMergeNotices = mergeGuestItems(current, guest, user.id);
-          });
-        sessions.set(portal, {
-          userId: user.id,
-          expiresAt: Date.now() + 8 * 3600000,
-        });
-        return { ...user, cartMergeNotices };
+        return establishSession(user, portal);
       },
       async currentUser(portal) {
         const db = await repository.read();
@@ -141,6 +170,50 @@ export function createServices(
         : null,
     ),
     profile: {
+      async completeProfile(input, expectedRevision) {
+        const ownerId = sessions.get("customer")?.userId;
+        const parsed = profileSetupSchema.safeParse(input);
+        if (!parsed.success)
+          throw new ServiceError(
+            "VALIDATION",
+            "Kiểm tra thông tin cá nhân và địa chỉ.",
+            Object.fromEntries(
+              parsed.error.issues.map((issue) => [
+                String(issue.path[0]),
+                issue.message,
+              ]),
+            ),
+          );
+        const updated = await repository.update(expectedRevision, (db) => {
+          const user = requireActor(db, "customer", "profile:own");
+          if (user.id !== ownerId)
+            throw new ServiceError(
+              "CONFLICT",
+              "Phiên khách hàng đã thay đổi. Tải lại trước khi lưu.",
+            );
+          if (user.profileCompleted !== false)
+            throw new ServiceError(
+              "CONFLICT",
+              "Hồ sơ đã được hoàn thiện. Tải lại để tiếp tục.",
+            );
+          user.name = parsed.data.name;
+          user.profileCompleted = true;
+          db.addresses
+            .filter((a) => a.userId === user.id)
+            .forEach((a) => {
+              a.isDefault = false;
+            });
+          db.addresses.push({
+            id: crypto.randomUUID(),
+            userId: user.id,
+            recipient: user.name,
+            phone: parsed.data.phone,
+            line: parsed.data.line,
+            isDefault: true,
+          });
+        });
+        return updated.users.find((user) => user.id === ownerId)!;
+      },
       async get() {
         const db = await repository.read();
         const user = await actor(db, "customer", "profile:own");

@@ -15,6 +15,7 @@ export function createSeed(now = new Date()): Database {
     seedVersion: 2,
     revision: 0,
     seededAt: at(0),
+    credentials: [],
     users: [
       {
         id: "customer-1",

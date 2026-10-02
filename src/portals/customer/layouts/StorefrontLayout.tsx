@@ -8,10 +8,11 @@ import {
   Typography,
 } from "@mui/material";
 import ArrowOutwardRounded from "@mui/icons-material/ArrowOutwardRounded";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
 import { Brand } from "../../../shared/components/Brand";
 import { useLogout, useSession } from "../../../shared/auth/useSession";
-import { ErrorState } from "../../../shared/components/Feedback";
+import { ErrorState, LoadingState } from "../../../shared/components/Feedback";
+import { safeReturnTo } from "../../../shared/auth/redirect";
 import { StorefrontHeader } from "../components/StorefrontHeader";
 
 export function StorefrontLayout() {
@@ -53,7 +54,18 @@ export function StorefrontLayout() {
             </Stack>
           </Alert>
         )}
-        <Outlet />
+        {session.isPending ? (
+          <LoadingState />
+        ) : session.data?.profileCompleted === false &&
+          location.pathname !== "/account/setup" ? (
+          <Navigate
+            replace
+            to={`/account/setup?${new URLSearchParams({ returnTo: safeReturnTo(location.pathname === "/register" ? new URLSearchParams(location.search).get("returnTo") : location.pathname + location.search, "customer") })}`}
+            state={location.state}
+          />
+        ) : (
+          <Outlet />
+        )}
       </Container>
       <Box
         component="footer"

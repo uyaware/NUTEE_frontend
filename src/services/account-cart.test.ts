@@ -192,25 +192,113 @@ describe("M3 account and cart", () => {
     expect(storage.getItem(GUEST_CART_KEY)).toBe(raw);
     expect((await services.cart.get()).ownerId).toBeNull();
   });
-  it("registers only a customer, validates duplicates, and stores no password", async () => {
-    const user = await services.auth.register(
-      " Người dùng mới ",
-      " NEW@NUTEE.DEMO ",
-    );
+  it("registers a customer with their own hashed password, logs in and merges the guest cart once", async () => {
+    await services.cart.add("product-1", 2);
+    const password = "Personal@456";
+    const user = await services.auth.register(" NEW@NUTEE.DEMO ", password);
     expect(user).toMatchObject({
       role: "customer",
-      name: "Người dùng mới",
+      name: "",
+      profileCompleted: false,
       email: "new@nutee.demo",
     });
     await expect(
-      services.auth.register("Other", "new@nutee.demo"),
+      services.auth.register("new@nutee.demo", password),
     ).rejects.toMatchObject({ code: "VALIDATION" });
-    await expect(services.auth.register("", "bad")).rejects.toMatchObject({
+    await expect(services.auth.register("bad", password)).rejects.toMatchObject(
+      {
+        code: "VALIDATION",
+      },
+    );
+    expect((await services.cart.get()).ownerId).toBe(user.id);
+    expect((await services.cart.get()).quantity).toBe(2);
+    expect(await services.auth.currentUser("customer")).toMatchObject({
+      id: user.id,
+      profileCompleted: false,
+    });
+    expect(user).not.toHaveProperty("password");
+    expect(user).not.toHaveProperty("hash");
+    expect(storage.getItem(DB_KEY)).not.toContain(password);
+    expect(storage.getItem(DB_KEY)).not.toContain(DEMO_PASSWORD);
+    await services.auth.logout("customer");
+    await expect(login(user.email)).rejects.toMatchObject({
       code: "VALIDATION",
     });
-    await login(user.email);
-    expect((await services.cart.get()).ownerId).toBe(user.id);
-    expect(storage.getItem(DB_KEY)).not.toContain(DEMO_PASSWORD);
+    await services.auth.login("customer", user.email, password);
+    expect((await services.cart.get()).quantity).toBe(2);
+    const fresh = new LocalStorageRepository(() => storage);
+    await createServices(fresh, fresh).auth.login(
+      "customer",
+      user.email,
+      password,
+    );
+    await expect(
+      services.auth.login("backoffice", user.email, password),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+  it("rejects short passwords without creating a user or session", async () => {
+    await expect(
+      services.auth.register("new@nutee.demo", "short"),
+    ).rejects.toMatchObject({
+      code: "VALIDATION",
+      fieldErrors: { password: expect.any(String) },
+    });
+    expect((await repository.read()).users).toHaveLength(4);
+    expect(await services.auth.currentUser("customer")).toBeNull();
+  });
+  it("completes name and default address together, preserving incomplete state on invalid input or stale revision", async () => {
+    const user = await services.auth.register("new@nutee.demo", "Personal@456");
+    const profile = await services.profile.get();
+    const input = {
+      name: " Người dùng mới ",
+      phone: address.phone,
+      line: address.line,
+    };
+    await expect(
+      services.profile.completeProfile(
+        { ...input, line: "short" },
+        profile.revision,
+      ),
+    ).rejects.toMatchObject({ code: "VALIDATION" });
+    expect((await services.profile.get()).user.profileCompleted).toBe(false);
+    expect((await services.profile.get()).addresses).toEqual([]);
+    await repository.update(profile.revision, (db) => {
+      db.products[0].stock += 1;
+    });
+    await expect(
+      services.profile.completeProfile(input, profile.revision),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+    expect((await services.profile.get()).addresses).toEqual([]);
+    const current = await services.profile.get();
+    const completed = await services.profile.completeProfile(
+      input,
+      current.revision,
+    );
+    expect(completed).toMatchObject({
+      id: user.id,
+      name: "Người dùng mới",
+      profileCompleted: true,
+    });
+    expect((await services.profile.get()).addresses).toEqual([
+      expect.objectContaining({
+        userId: user.id,
+        recipient: "Người dùng mới",
+        phone: input.phone,
+        line: input.line,
+        isDefault: true,
+      }),
+    ]);
+    expect(
+      (await repository.read()).addresses.filter(
+        (a) => a.userId === "customer-1",
+      ),
+    ).toHaveLength(1);
+    await expect(
+      services.profile.completeProfile(
+        input,
+        (await services.profile.get()).revision,
+      ),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
   });
   it("adds, edits and switches default addresses with ownership and snapshots preserved", async () => {
     await login();

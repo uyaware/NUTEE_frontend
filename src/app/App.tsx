@@ -23,6 +23,7 @@ const customerTitles: Record<string, string> = {
   "/cart": "Giỏ hàng",
   "/account/addresses": "Địa chỉ giao hàng",
   "/account/security": "Bảo mật tài khoản",
+  "/account/setup": "Hoàn thiện thông tin",
   "/register": "Đăng ký",
   "/verify-email": "Xác minh email",
   "/forgot-password": "Quên mật khẩu",

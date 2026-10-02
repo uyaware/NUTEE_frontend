@@ -1,17 +1,28 @@
 import { z } from "zod";
 
-export const registrationSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, "Tên cần từ 2 đến 80 ký tự.")
-    .max(80, "Tên tối đa 80 ký tự."),
+export const nameSchema = z
+  .string()
+  .trim()
+  .min(2, "Tên cần từ 2 đến 80 ký tự.")
+  .max(80, "Tên tối đa 80 ký tự.");
+export const registrationCredentialsSchema = z.object({
   email: z
     .string()
     .trim()
     .toLowerCase()
     .pipe(z.email("Nhập địa chỉ email hợp lệ.")),
+  password: z
+    .string()
+    .min(8, "Mật khẩu cần ít nhất 8 ký tự.")
+    .max(128, "Mật khẩu tối đa 128 ký tự."),
 });
+export const registrationSchema = registrationCredentialsSchema
+  .extend({ confirmPassword: z.string().min(1, "Nhập lại mật khẩu.") })
+  .refine((fields) => fields.password === fields.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Mật khẩu xác nhận không khớp.",
+  });
+export type RegistrationInput = z.infer<typeof registrationSchema>;
 export const addressInputSchema = z.object({
   recipient: z
     .string()
@@ -33,3 +44,7 @@ export const addressInputSchema = z.object({
   isDefault: z.boolean(),
 });
 export type AddressInput = z.infer<typeof addressInputSchema>;
+export const profileSetupSchema = addressInputSchema
+  .pick({ phone: true, line: true })
+  .extend({ name: nameSchema });
+export type ProfileSetupInput = z.infer<typeof profileSetupSchema>;

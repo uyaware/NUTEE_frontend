@@ -1,4 +1,5 @@
 import { useState } from "react";
+import AddRounded from "@mui/icons-material/AddRounded";
 import {
   Alert,
   Button,
@@ -246,12 +247,34 @@ export default function AddressesPage() {
     );
   const data = profile.data;
   return (
-    <Stack spacing={3} sx={{ maxWidth: 800 }}>
-      <Typography variant="h1">Địa chỉ giao hàng</Typography>
-      <Typography color="text.secondary">
-        Quản lý địa chỉ nhận hàng của bạn. Địa chỉ trên đơn đã tạo được giữ
-        nguyên.
-      </Typography>
+    <Stack spacing={3}>
+      <Stack
+        direction={{ xs: "column", lg: "row" }}
+        spacing={2}
+        alignItems={{ xs: "flex-start", lg: "center" }}
+        justifyContent="space-between"
+      >
+        <Stack spacing={1}>
+          <Typography variant="h1">Địa chỉ giao hàng</Typography>
+          <Typography color="text.secondary">
+            Quản lý các địa chỉ nhận hàng của bạn.
+          </Typography>
+        </Stack>
+        <Button
+          variant="contained"
+          startIcon={<AddRounded />}
+          sx={{ flexShrink: 0 }}
+          onClick={() =>
+            setEdit({
+              address: null,
+              revision: data.revision,
+              ownerId: data.user.id,
+            })
+          }
+        >
+          Thêm địa chỉ
+        </Button>
+      </Stack>
       {action.isError && (
         <ErrorState
           error={action.error}
@@ -266,19 +289,6 @@ export default function AddressesPage() {
           Đã cập nhật địa chỉ.
         </Alert>
       )}
-      <Button
-        variant="contained"
-        sx={{ alignSelf: "flex-start" }}
-        onClick={() =>
-          setEdit({
-            address: null,
-            revision: data.revision,
-            ownerId: data.user.id,
-          })
-        }
-      >
-        Thêm địa chỉ
-      </Button>
       {!data.addresses.length && (
         <EmptyState
           title="Chưa có địa chỉ"

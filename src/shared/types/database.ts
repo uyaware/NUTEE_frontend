@@ -31,7 +31,8 @@ export const afterSaleStatusSchema = z.enum([
 export const userSchema = z.object({
   id,
   email: z.email(),
-  name: z.string().min(1),
+  name: z.string().max(80),
+  profileCompleted: z.boolean().optional(),
   role: roleSchema,
   isActive: z.boolean(),
 });
@@ -78,6 +79,17 @@ export const databaseSchema = z
     revision: z.number().int().nonnegative(),
     seededAt: date,
     users: z.array(userSchema),
+    credentials: z
+      .array(
+        z.object({
+          id,
+          userId: id,
+          salt: z.string().regex(/^[a-f0-9]{32}$/),
+          hash: z.string().regex(/^[a-f0-9]{64}$/),
+          iterations: z.number().int().min(210000),
+        }),
+      )
+      .default([]),
     externalIdentities: z.array(
       z.object({ id, userId: id, provider: id, providerUserId: id }),
     ),
@@ -207,6 +219,16 @@ export const databaseSchema = z
     db.externalIdentities.forEach((r) =>
       fk(db.users, r.userId, "identity.user"),
     );
+    db.credentials.forEach((r) => fk(db.users, r.userId, "credential.user"));
+    if (
+      new Set(db.credentials.map((r) => r.userId)).size !==
+      db.credentials.length
+    )
+      fail("Nhiều mật khẩu cho một user");
+    db.users.forEach((u) => {
+      if (u.profileCompleted !== false && !u.name.trim())
+        fail("Hồ sơ thiếu tên");
+    });
     db.addresses.forEach((r) => fk(db.users, r.userId, "address.user"));
     db.users.forEach((u) => {
       if (

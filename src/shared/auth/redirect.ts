@@ -17,6 +17,7 @@ export function safeReturnTo(value: string | null, portal: Portal): string {
   return ![
     "/login",
     "/register",
+    "/account/setup",
     "/verify-email",
     "/forgot-password",
     "/reset-password",

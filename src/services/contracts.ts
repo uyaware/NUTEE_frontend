@@ -14,10 +14,13 @@ import type {
   ProductReview,
 } from "../shared/types/catalog";
 import type { Cart } from "../shared/types/cart";
-import type { AddressInput } from "../shared/types/account";
+import type { AddressInput, ProfileSetupInput } from "../shared/types/account";
 
 export interface AuthService {
-  register(name: string, email: string): Promise<User>;
+  register(
+    email: string,
+    password: string,
+  ): Promise<User & { cartMergeNotices?: string[] }>;
   login(
     portal: Portal,
     email: string,
@@ -40,6 +43,10 @@ export interface ProfileService {
     revision: number;
   }>;
   updateName(name: string, expectedRevision: number): Promise<void>;
+  completeProfile(
+    input: ProfileSetupInput,
+    expectedRevision: number,
+  ): Promise<User>;
   saveAddress(
     id: string | null,
     input: AddressInput,
