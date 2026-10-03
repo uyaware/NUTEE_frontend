@@ -11,19 +11,23 @@ import {
 import QrCode2Rounded from "@mui/icons-material/QrCode2Rounded";
 import CheckCircleOutlineRounded from "@mui/icons-material/CheckCircleOutlineRounded";
 import TimerOutlined from "@mui/icons-material/TimerOutlined";
-import { Link, useParams, useSearchParams } from "react-router-dom";
-import { paymentLabels, prototypeOrders } from "../../../mocks/checkout";
+import {
+  Link,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
+import { paymentLabels, findPrototypeOrder } from "../../../mocks/checkout";
 import { money } from "../../../shared/lib/format";
 import { EmptyState } from "../../../shared/components/Feedback";
 import { OrderTotals } from "../components/CheckoutSummary";
 
 export default function PaymentPage() {
   const { id } = useParams();
+  const location = useLocation();
   const [params, setParams] = useSearchParams();
-  const order = prototypeOrders.find(
-    (item) => item.id === id && item.userId === "customer-1",
-  );
-  if (!order)
+  const order = findPrototypeOrder(id, location.state);
+  if (!order || order.userId !== "customer-1")
     return (
       <EmptyState
         title="Không tìm thấy đơn mẫu"
@@ -36,7 +40,11 @@ export default function PaymentPage() {
         <Alert severity="info">
           Đơn này thanh toán khi nhận hàng, không cần quét mã QR.
         </Alert>
-        <Button component={Link} to={`/account/orders/${order.id}`}>
+        <Button
+          component={Link}
+          to={`/account/orders/${order.id}`}
+          state={location.state}
+        >
           Xem đơn hàng
         </Button>
       </Stack>
@@ -140,8 +148,15 @@ export default function PaymentPage() {
                     ? {
                         component: Link,
                         to: `/orders/${order.id}/success?payment=paid`,
+                        state: location.state,
                       }
-                    : { onClick: () => setParams({ status: "pending" }) })}
+                    : {
+                        onClick: () =>
+                          setParams(
+                            { status: "pending" },
+                            { state: location.state },
+                          ),
+                      })}
                 >
                   {status === "paid"
                     ? "Xem xác nhận đơn hàng"
@@ -165,7 +180,9 @@ export default function PaymentPage() {
                   <Button
                     key={value}
                     variant={status === value ? "contained" : "outlined"}
-                    onClick={() => setParams({ status: value })}
+                    onClick={() =>
+                      setParams({ status: value }, { state: location.state })
+                    }
                     aria-pressed={status === value}
                   >
                     {value === "pending"
@@ -193,6 +210,7 @@ export default function PaymentPage() {
             <Button
               component={Link}
               to={`/account/orders/${order.id}${status === "paid" ? "?payment=paid" : ""}`}
+              state={location.state}
               variant="outlined"
             >
               Xem chi tiết đơn hàng

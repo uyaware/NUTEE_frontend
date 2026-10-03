@@ -3,17 +3,15 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   Chip,
-  IconButton,
-  InputAdornment,
+  FormControlLabel,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
 import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
 import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
-import VisibilityOutlined from "@mui/icons-material/VisibilityOutlined";
-import VisibilityOffOutlined from "@mui/icons-material/VisibilityOffOutlined";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,6 +22,7 @@ import { services } from "../../services";
 import { errorMessage } from "../lib/errors";
 import { safeReturnTo } from "../auth/redirect";
 import { Brand } from "./Brand";
+import { PasswordField } from "./PasswordField";
 
 const schema = z.object({
   email: z.email("Nhập địa chỉ email hợp lệ."),
@@ -35,7 +34,7 @@ export function LoginPage({ portal }: { portal: Portal }) {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const client = useQueryClient();
-  const [showPassword, setShowPassword] = useState(false);
+  const [rememberLogin, setRememberLogin] = useState(false);
   const {
     register,
     handleSubmit,
@@ -166,6 +165,16 @@ export function LoginPage({ portal }: { portal: Portal }) {
           onSubmit={handleSubmit((fields) => login.mutate(fields))}
           noValidate
           spacing={2}
+          sx={(theme) => ({
+            "& .MuiOutlinedInput-root": { bgcolor: "background.paper" },
+            // Paint over the browser autofill background without disabling autofill.
+            "& input:is(:-webkit-autofill, :autofill)": {
+              WebkitBoxShadow: `0 0 0 1000px ${theme.palette.background.paper} inset`,
+              boxShadow: `0 0 0 1000px ${theme.palette.background.paper} inset`,
+              WebkitTextFillColor: theme.palette.text.primary,
+              caretColor: theme.palette.text.primary,
+            },
+          })}
         >
           <TextField
             label="Email"
@@ -175,33 +184,24 @@ export function LoginPage({ portal }: { portal: Portal }) {
             error={!!errors.email}
             helperText={errors.email?.message}
           />
-          <TextField
+          <PasswordField
             label="Mật khẩu"
-            type={showPassword ? "text" : "password"}
             autoComplete="current-password"
             {...register("password")}
             error={!!errors.password}
             helperText={errors.password?.message}
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label={
-                        showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"
-                      }
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <VisibilityOffOutlined />
-                      ) : (
-                        <VisibilityOutlined />
-                      )}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              },
-            }}
+          />
+          <FormControlLabel
+            sx={{ m: 0, alignSelf: "flex-start" }}
+            control={
+              <Checkbox
+                checked={rememberLogin}
+                onChange={(_, checked) => setRememberLogin(checked)}
+                disabled={login.isPending}
+                sx={{ width: 44, height: 44 }}
+              />
+            }
+            label="Ghi nhớ đăng nhập"
           />
           {login.isError && (
             <Alert severity="error">{errorMessage(login.error)}</Alert>

@@ -9,7 +9,18 @@ import {
 } from "../../../mocks/checkout";
 import { ProductImage } from "./ProductImage";
 
-export function OrderProducts({ items }: { items: OrderItem[] }) {
+export type CheckoutProduct = Pick<
+  OrderItem,
+  | "id"
+  | "productId"
+  | "name"
+  | "imageUrl"
+  | "configuration"
+  | "quantity"
+  | "price"
+>;
+
+export function OrderProducts({ items }: { items: CheckoutProduct[] }) {
   return (
     <Stack spacing={2}>
       {items.map((item) => (
@@ -38,9 +49,11 @@ export function OrderProducts({ items }: { items: OrderItem[] }) {
             >
               {item.name}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {item.configuration}
-            </Typography>
+            {item.configuration && (
+              <Typography variant="body2" color="text.secondary">
+                {item.configuration}
+              </Typography>
+            )}
             <Typography variant="body2">Số lượng: {item.quantity}</Typography>
             <Typography fontWeight={600}>
               {money(item.price * item.quantity)}
@@ -95,16 +108,22 @@ export function OrderTotals({
   );
 }
 
-export function CheckoutSummary() {
+export function CheckoutSummary({
+  items = checkoutItems,
+  quote = checkoutQuote,
+}: {
+  items?: CheckoutProduct[];
+  quote?: Pick<Order, "subtotal" | "discount" | "shipping" | "total">;
+}) {
   return (
     <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
       <Stack spacing={3}>
         <Typography variant="h3" component="h2">
           Đơn hàng của bạn
         </Typography>
-        <OrderProducts items={checkoutItems} />
+        <OrderProducts items={items} />
         <Divider />
-        <OrderTotals />
+        <OrderTotals quote={quote} />
       </Stack>
     </Paper>
   );

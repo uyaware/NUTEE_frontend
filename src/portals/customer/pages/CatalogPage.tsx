@@ -129,38 +129,48 @@ export default function CatalogPage() {
           KHÁM PHÁ NUTEE
         </Typography>
         <Typography variant="h1">Sản phẩm</Typography>
-        <Typography color="text.secondary" sx={{ mt: 1 }}>
-          Tìm công nghệ phù hợp với nhu cầu của bạn.
-        </Typography>
-      </Box>
-      <Box
-        component="form"
-        key={filters.q}
-        role="search"
-        aria-label="Tìm trong danh mục"
-        onSubmit={(event) => {
-          event.preventDefault();
-          update({
-            q: String(new FormData(event.currentTarget).get("q") ?? ""),
-          });
-        }}
-        sx={{
-          display: "flex",
-          alignItems: "flex-start",
-          gap: 1,
-          width: { xs: "100%", md: "50%" },
-        }}
-      >
-        <TextField
-          name="q"
-          label="Tìm tên, mã hoặc cấu hình"
-          defaultValue={filters.q}
-          slotProps={{ htmlInput: { maxLength: 160 } }}
-          sx={{ flex: 1, minWidth: 0 }}
-        />
-        <Button type="submit" variant="contained" sx={{ flexShrink: 0 }}>
-          Tìm kiếm
-        </Button>
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={2}
+          alignItems={{ md: "center" }}
+          justifyContent="space-between"
+          sx={{ mt: 2 }}
+        >
+          <Typography color="text.secondary" sx={{ flex: 1 }}>
+            Tìm sản phẩm phù hợp với nhu cầu của bạn.
+          </Typography>
+          <Box
+            component="form"
+            key={filters.q}
+            role="search"
+            aria-label="Tìm trong danh mục"
+            onSubmit={(event) => {
+              event.preventDefault();
+              update({
+                q: String(new FormData(event.currentTarget).get("q") ?? ""),
+              });
+            }}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              width: { xs: "100%", md: "50%" },
+              maxWidth: { md: 520 },
+              minWidth: 0,
+            }}
+          >
+            <TextField
+              name="q"
+              label="Tìm tên, mã hoặc cấu hình"
+              defaultValue={filters.q}
+              slotProps={{ htmlInput: { maxLength: 160 } }}
+              sx={{ flex: 1, minWidth: 0 }}
+            />
+            <Button type="submit" variant="contained" sx={{ flexShrink: 0 }}>
+              Tìm kiếm
+            </Button>
+          </Box>
+        </Stack>
       </Box>
       <Stack direction="row" useFlexGap flexWrap="wrap" spacing={1}>
         {chips.map((chip) => (

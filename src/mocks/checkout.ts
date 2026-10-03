@@ -4,7 +4,29 @@ import type { Database, Order } from "../shared/types/database";
 // Read-only fixtures for the M4 prototype. No storage or service mutations.
 const seed = createSeed(new Date("2026-10-03T03:00:00.000Z"));
 export type OrderItem = Database["orderItems"][number];
-export type PrototypeOrder = Order & { items: OrderItem[] };
+export type OrderDisplayItem = Pick<
+  OrderItem,
+  | "id"
+  | "productId"
+  | "name"
+  | "imageUrl"
+  | "configuration"
+  | "quantity"
+  | "price"
+> &
+  Partial<Pick<OrderItem, "warrantyCode" | "warrantyExpiresAt">>;
+export type PrototypeOrder = Order & { items: OrderDisplayItem[] };
+
+/** Temporary screen data only; navigation never persists an order. */
+export function findPrototypeOrder(
+  id: string | undefined,
+  navigationState?: { order?: PrototypeOrder } | null,
+) {
+  const preview = navigationState?.order;
+  return preview?.id === id
+    ? preview
+    : prototypeOrders.find((order) => order.id === id);
+}
 
 export const checkoutAddresses = [
   {

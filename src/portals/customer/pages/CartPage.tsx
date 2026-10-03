@@ -1,40 +1,37 @@
+import { useState } from "react";
 import {
-  Alert,
   Box,
   Button,
-  Chip,
-  IconButton,
+  Checkbox,
+  Divider,
+  FormControlLabel,
   Paper,
   Stack,
   Typography,
 } from "@mui/material";
-import AddRounded from "@mui/icons-material/AddRounded";
-import RemoveRounded from "@mui/icons-material/RemoveRounded";
+import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
 import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { services } from "../../../services";
 import { useCart } from "../components/useCart";
-import { ProductImage } from "../components/ProductImage";
+import { CartProductRow } from "../components/CartProductRow";
 import {
   EmptyState,
   ErrorState,
   LoadingState,
 } from "../../../shared/components/Feedback";
 import { money } from "../../../shared/lib/format";
-import { MAX_CART_QUANTITY } from "../../../shared/types/cart";
 import { DataRecovery } from "../../../shared/components/DataRecovery";
 import { ServiceError } from "../../../shared/lib/errors";
 import { tokens } from "../../../shared/theme/tokens";
 
-const issueLabels = {
-  hidden: "Sản phẩm đã ngừng bán",
-  "out-of-stock": "Tạm hết hàng",
-  "insufficient-stock": "Số lượng vượt tồn kho",
-  available: "Còn hàng",
-};
 export default function CartPage() {
   const cart = useCart();
   const client = useQueryClient();
+  const [selection, setSelection] = useState<{
+    ownerId: string | null | undefined;
+    excluded: Set<string>;
+  }>({ ownerId: undefined, excluded: new Set() });
   const change = useMutation({
     mutationFn: ({ id, quantity }: { id: string; quantity?: number }) =>
       quantity === undefined
@@ -45,7 +42,15 @@ export default function CartPage() {
             cart.data!.revision,
             cart.data!.ownerId,
           ),
-    onSuccess: () => client.invalidateQueries({ queryKey: ["customer"] }),
+    onSuccess: (_, variables) => {
+      if (variables.quantity === undefined)
+        setSelection((current) => {
+          const excluded = new Set(current.excluded);
+          excluded.delete(variables.id);
+          return { ...current, excluded };
+        });
+      return client.invalidateQueries({ queryKey: ["customer"] });
+    },
   });
   if (cart.isPending) return <LoadingState />;
   if (cart.isError)
@@ -57,15 +62,30 @@ export default function CartPage() {
       </Stack>
     );
   const data = cart.data;
+  const excluded =
+    selection.ownerId === data.ownerId ? selection.excluded : new Set<string>();
+  const eligible = data.items.filter((item) => item.status === "available");
+  const selected = eligible.filter((item) => !excluded.has(item.productId));
+  const quantity = selected.reduce((total, item) => total + item.quantity, 0);
+  const subtotal = selected.reduce((total, item) => total + item.lineTotal, 0);
+  const allSelected =
+    eligible.length > 0 && selected.length === eligible.length;
+  const selectItem = (id: string, checked: boolean) => {
+    const next = new Set(excluded);
+    if (checked) next.delete(id);
+    else next.add(id);
+    setSelection({ ownerId: data.ownerId, excluded: next });
+  };
+  const checkoutPath = `/checkout?${new URLSearchParams({ items: selected.map((item) => item.productId).join(",") })}`;
   return (
-    <Stack spacing={3}>
-      <Typography variant="h1">Giỏ hàng của bạn</Typography>
-      <Typography color="text.secondary">
-        {data.ownerId
-          ? "Giỏ được lưu theo tài khoản."
-          : "Giỏ khách được lưu trên trình duyệt này. Đăng nhập để gộp vào giỏ tài khoản."}{" "}
-        Giá và tình trạng bán được cập nhật khi mở giỏ.
-      </Typography>
+    <Stack spacing={3} sx={{ maxWidth: 1280, mx: "auto" }}>
+      <Box>
+        <Typography variant="h1">Giỏ hàng của bạn</Typography>
+        <Typography color="text.secondary" sx={{ mt: 1 }}>
+          Chọn những sản phẩm bạn muốn mua. Tạm tính chỉ bao gồm sản phẩm đã
+          chọn.
+        </Typography>
+      </Box>
       {change.isError && (
         <ErrorState
           error={change.error}
@@ -75,206 +95,146 @@ export default function CartPage() {
           }}
         />
       )}
-      {change.isSuccess && (
-        <Alert severity="success" role="status">
-          Đã cập nhật giỏ hàng.
-        </Alert>
-      )}
       {!data.items.length ? (
-        <>
+        <Stack spacing={2} alignItems="flex-start">
           <EmptyState
             title="Giỏ hàng đang trống"
             description="Khám phá sản phẩm và thêm món bạn muốn mua."
           />
-          <Button
-            component={Link}
-            to="/products"
-            variant="contained"
-            sx={{ alignSelf: "flex-start" }}
-          >
+          <Button component={Link} to="/products" variant="contained">
             Khám phá sản phẩm
           </Button>
-          <Button
-            component={Link}
-            to="/checkout"
-            variant="outlined"
-            sx={{ alignSelf: "flex-start" }}
-          >
+          <Button component={Link} to="/checkout" variant="outlined">
             Xem thanh toán mẫu
           </Button>
-        </>
+        </Stack>
       ) : (
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "minmax(0, 1fr) 320px" },
+            gridTemplateColumns: {
+              xs: "minmax(0, 1fr)",
+              md: "minmax(0, 1fr) 320px",
+            },
             gap: 3,
             alignItems: "start",
           }}
         >
-          <Stack spacing={2}>
-            {data.items.map((item) => (
-              <Paper
-                component="article"
-                key={item.productId}
-                variant="outlined"
-                sx={{ p: { xs: 2, sm: 3 } }}
-              >
-                <Stack spacing={2}>
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <Box
-                      sx={{
-                        width: { xs: 72, sm: 112 },
-                        height: 90,
-                        flexShrink: 0,
-                      }}
-                    >
-                      <ProductImage
-                        src={item.imageUrl}
-                        alt={`Minh họa ${item.name}`}
-                      />
-                    </Box>
-                    <Stack spacing={1} sx={{ minWidth: 0 }}>
-                      <Typography
-                        component="h2"
-                        variant="h3"
-                        sx={{ overflowWrap: "anywhere" }}
-                      >
-                        {item.status === "hidden" ? (
-                          item.name
-                        ) : (
-                          <Link to={`/products/${item.productId}`}>
-                            {item.name}
-                          </Link>
-                        )}
-                      </Typography>
-                      <Typography>{money(item.price)} / sản phẩm</Typography>
-                      <Chip
-                        label={issueLabels[item.status]}
-                        color={
-                          item.status === "available" ? "success" : "warning"
-                        }
-                        size="small"
-                        sx={{ alignSelf: "flex-start" }}
-                      />
-                    </Stack>
-                  </Stack>
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    useFlexGap
-                    flexWrap="wrap"
-                    alignItems="center"
-                    justifyContent="space-between"
-                  >
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      sx={{
-                        height: tokens.layout.controlHeight,
-                        boxShadow: (theme) =>
-                          `inset 0 0 0 1px ${theme.palette.divider}`,
-                        borderRadius: 1,
-                        "& .MuiIconButton-root": { borderRadius: 1 },
-                      }}
-                    >
-                      <IconButton
-                        aria-label={`Giảm số lượng ${item.name}`}
-                        disabled={
-                          change.isPending ||
-                          item.quantity <= 1 ||
-                          item.stock < 1 ||
-                          item.status === "hidden"
-                        }
-                        onClick={() =>
-                          change.mutate({
-                            id: item.productId,
-                            quantity: Math.min(item.quantity - 1, item.stock),
-                          })
-                        }
-                      >
-                        <RemoveRounded />
-                      </IconButton>
-                      <Typography
-                        aria-label={`Số lượng ${item.name}`}
-                        sx={{ minWidth: 24, textAlign: "center" }}
-                      >
-                        {item.quantity}
-                      </Typography>
-                      <IconButton
-                        aria-label={`Tăng số lượng ${item.name}`}
-                        disabled={
-                          change.isPending ||
-                          item.quantity >=
-                            Math.min(item.stock, MAX_CART_QUANTITY) ||
-                          item.status === "hidden"
-                        }
-                        onClick={() =>
-                          change.mutate({
-                            id: item.productId,
-                            quantity: item.quantity + 1,
-                          })
-                        }
-                      >
-                        <AddRounded />
-                      </IconButton>
-                    </Stack>
-                    <Typography fontWeight={600}>
-                      {money(item.lineTotal)}
-                    </Typography>
-                    <Button
-                      color="error"
-                      disabled={change.isPending}
-                      onClick={() => change.mutate({ id: item.productId })}
-                      aria-label={`Xóa ${item.name} khỏi giỏ`}
-                    >
-                      Xóa
-                    </Button>
-                  </Stack>
-                  {item.status === "insufficient-stock" && (
-                    <Alert severity="warning">
-                      Chỉ còn {item.stock} sản phẩm. Giảm số lượng trước khi
-                      mua.
-                    </Alert>
-                  )}
-                </Stack>
-              </Paper>
-            ))}
-          </Stack>
-          <Paper variant="outlined" sx={{ p: 3 }}>
-            <Stack spacing={2}>
-              <Typography variant="h2">Tạm tính</Typography>
-              <Typography>{data.quantity} sản phẩm</Typography>
-              <Typography variant="h2" component="p">
-                {money(data.subtotal)}
+          <Paper variant="outlined" sx={{ minWidth: 0, overflow: "hidden" }}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              gap={1}
+              useFlexGap
+              flexWrap="wrap"
+              sx={{ px: { xs: 1.5, sm: 2.5 }, py: 1.5 }}
+            >
+              <FormControlLabel
+                sx={{ m: 0 }}
+                control={
+                  <Checkbox
+                    checked={allSelected}
+                    indeterminate={selected.length > 0 && !allSelected}
+                    disabled={!eligible.length}
+                    onChange={(_, checked) =>
+                      setSelection({
+                        ownerId: data.ownerId,
+                        excluded: new Set(
+                          checked ? [] : eligible.map((item) => item.productId),
+                        ),
+                      })
+                    }
+                    sx={{ width: 44, height: 44 }}
+                  />
+                }
+                label={
+                  <Typography fontWeight={600}>
+                    Chọn tất cả ({data.items.length})
+                  </Typography>
+                }
+              />
+              <Typography variant="body2" color="text.secondary">
+                Đã chọn {selected.length}/{data.items.length} mặt hàng
               </Typography>
-              <Typography color="text.secondary">
+            </Stack>
+            <Divider />
+            {data.items.map((item, index) => (
+              <Box key={item.productId}>
+                {index > 0 && <Divider />}
+                <CartProductRow
+                  item={item}
+                  selected={
+                    item.status === "available" && !excluded.has(item.productId)
+                  }
+                  pending={change.isPending}
+                  onSelect={(checked) => selectItem(item.productId, checked)}
+                  onQuantity={(next) =>
+                    change.mutate({ id: item.productId, quantity: next })
+                  }
+                  onRemove={() => change.mutate({ id: item.productId })}
+                />
+              </Box>
+            ))}
+          </Paper>
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 3,
+              position: { md: "sticky" },
+              top: tokens.layout.storefrontHeaderHeight + 16,
+            }}
+          >
+            <Stack spacing={2.5}>
+              <Typography variant="h3" component="h2">
+                Thông tin đơn hàng
+              </Typography>
+              <Stack direction="row" justifyContent="space-between" gap={1}>
+                <Typography color="text.secondary">Sản phẩm đã chọn</Typography>
+                <Typography fontWeight={600}>{quantity} sản phẩm</Typography>
+              </Stack>
+              <Divider />
+              <Box role="status" aria-live="polite" aria-atomic="true">
+                <Typography color="text.secondary">
+                  Tạm tính ({selected.length} mặt hàng)
+                </Typography>
+                <Typography
+                  variant="h2"
+                  component="p"
+                  color="primary.main"
+                  sx={{ mt: 1, fontVariantNumeric: "tabular-nums" }}
+                >
+                  {money(subtotal)}
+                </Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
                 Chưa gồm phí giao hàng và ưu đãi.
               </Typography>
-              {data.hasIssues && (
-                <Alert severity="warning">
-                  Giỏ có sản phẩm không thể mua. Kiểm tra tình trạng và số
-                  lượng.
-                </Alert>
+              {!selected.length && (
+                <Typography variant="body2" color="text.secondary">
+                  Chọn ít nhất một sản phẩm để tiếp tục thanh toán.
+                </Typography>
               )}
+              <Button
+                component={Link}
+                to={
+                  data.ownerId
+                    ? checkoutPath
+                    : `/login?returnTo=${encodeURIComponent(checkoutPath)}`
+                }
+                variant="contained"
+                endIcon={<ArrowForwardRounded />}
+                disabled={!selected.length}
+              >
+                Thanh toán ({quantity})
+              </Button>
               {!data.ownerId && (
-                <Button
-                  component={Link}
-                  to="/login?returnTo=%2Fcart"
-                  variant="contained"
-                >
-                  Đăng nhập và gộp giỏ
-                </Button>
+                <Typography variant="body2" color="text.secondary">
+                  Đăng nhập để tiếp tục với các sản phẩm đã chọn.
+                </Typography>
               )}
               <Button component={Link} to="/products" variant="outlined">
                 Tiếp tục mua sắm
-              </Button>
-              <Button
-                component={Link}
-                to={data.ownerId ? "/checkout" : "/login?returnTo=%2Fcheckout"}
-                variant={data.ownerId ? "contained" : "outlined"}
-              >
-                Tiến hành thanh toán
               </Button>
             </Stack>
           </Paper>

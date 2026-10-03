@@ -101,19 +101,24 @@ const base: ThemeOptions = {
     MuiOutlinedInput: {
       styleOverrides: {
         root: ({ ownerState }) => ({
-          ...(!ownerState.multiline
-            ? {
+          ...(ownerState.multiline
+            ? { height: "auto", alignItems: "flex-start", padding: "12px 14px" }
+            : {
                 height:
                   ownerState.size === "small"
                     ? tokens.layout.controlHeight
                     : tokens.layout.largeControlHeight,
-              }
-            : {}),
+              }),
         }),
         input: ({ ownerState }) => ({
-          ...(!ownerState.multiline
-            ? { height: "100%", boxSizing: "border-box", paddingBlock: 0 }
-            : {}),
+          ...(ownerState.multiline
+            ? {
+                padding: 0,
+                height: "auto",
+                lineHeight: 1.6,
+                boxSizing: "content-box",
+              }
+            : { height: "100%", boxSizing: "border-box", paddingBlock: 0 }),
         }),
       },
     },

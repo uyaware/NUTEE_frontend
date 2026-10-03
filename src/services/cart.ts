@@ -6,6 +6,7 @@ import type { Database, User } from "../shared/types/database";
 import type { Cart, GuestCart } from "../shared/types/cart";
 import { MAX_CART_QUANTITY } from "../shared/types/cart";
 import { ServiceError } from "../shared/lib/errors";
+import { createId } from "../shared/lib/id";
 import type { CartService } from "./contracts";
 
 type Items = GuestCart["items"];
@@ -30,7 +31,7 @@ function saleable(db: Database, productId: string, value: number) {
 function userCart(db: Database, userId: string) {
   let cart = db.carts.find((c) => c.userId === userId);
   if (!cart) {
-    cart = { id: crypto.randomUUID(), userId };
+    cart = { id: createId(), userId };
     db.carts.push(cart);
   }
   return cart;
@@ -39,7 +40,7 @@ function saveItems(db: Database, userId: string, items: Items) {
   const cart = userCart(db, userId);
   db.cartItems = db.cartItems.filter((i) => i.cartId !== cart.id);
   db.cartItems.push(
-    ...items.map((i) => ({ ...i, id: crypto.randomUUID(), cartId: cart.id })),
+    ...items.map((i) => ({ ...i, id: createId(), cartId: cart.id })),
   );
 }
 function ownedItems(db: Database, userId: string): Items {

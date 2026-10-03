@@ -62,11 +62,27 @@ export function AddToCart({
       </Stack>
       {add.isError && <ErrorState error={add.error} />}
       {add.isSuccess && (
-        <Alert severity="success" role="status">
-          Đã thêm vào giỏ.{" "}
-          <Button component={Link} to="/cart">
-            Xem giỏ hàng
-          </Button>
+        <Alert
+          severity="success"
+          role="status"
+          sx={{
+            alignItems: "center",
+            "& .MuiAlert-message": { width: "100%", py: 0 },
+          }}
+        >
+          <Stack
+            direction="row"
+            alignItems="center"
+            gap={1}
+            useFlexGap
+            flexWrap="wrap"
+            justifyContent="space-between"
+          >
+            <span>Đã thêm vào giỏ.</span>
+            <Button component={Link} to="/cart">
+              Xem giỏ hàng
+            </Button>
+          </Stack>
         </Alert>
       )}
     </Stack>

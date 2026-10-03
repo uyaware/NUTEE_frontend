@@ -22,19 +22,77 @@ import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
 import LocalShippingOutlined from "@mui/icons-material/LocalShippingOutlined";
 import PaymentsOutlined from "@mui/icons-material/PaymentsOutlined";
 import QrCodeRounded from "@mui/icons-material/QrCodeRounded";
-import { Link, useNavigate } from "react-router-dom";
-import { checkoutAddresses } from "../../../mocks/checkout";
-import { CheckoutSummary } from "../components/CheckoutSummary";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  checkoutAddresses,
+  checkoutItems,
+  checkoutQuote,
+  prototypeOrders,
+} from "../../../mocks/checkout";
+import {
+  CheckoutSummary,
+  type CheckoutProduct,
+} from "../components/CheckoutSummary";
+import { useCart } from "../components/useCart";
+import { ErrorState, LoadingState } from "../../../shared/components/Feedback";
 import { tokens } from "../../../shared/theme/tokens";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const cart = useCart();
   const [step, setStep] = useState(0);
   const [addressId, setAddressId] = useState("home");
   const [address, setAddress] = useState(checkoutAddresses[0]);
   const [method, setMethod] = useState("cod");
   const [note, setNote] = useState("");
   const [promotionOpen, setPromotionOpen] = useState(false);
+  const fromCart = params.has("items");
+  if (fromCart && cart.isPending) return <LoadingState />;
+  if (fromCart && cart.isError)
+    return <ErrorState error={cart.error} retry={() => void cart.refetch()} />;
+  const selectedIds = new Set((params.get("items") ?? "").split(","));
+  const items: CheckoutProduct[] = fromCart
+    ? (cart.data?.items ?? [])
+        .filter(
+          (item) =>
+            selectedIds.has(item.productId) && item.status === "available",
+        )
+        .map((item) => ({ ...item, id: item.productId, configuration: "" }))
+    : checkoutItems;
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+  const discount = fromCart
+    ? subtotal >= 1000000
+      ? checkoutQuote.discount
+      : 0
+    : checkoutQuote.discount;
+  const shipping = items.length ? checkoutQuote.shipping : 0;
+  const quote = {
+    subtotal,
+    discount,
+    shipping,
+    total: subtotal - discount + shipping,
+  };
+  if (!items.length)
+    return (
+      <Stack spacing={2}>
+        <Alert severity="info">
+          Chưa có sản phẩm được chọn để thanh toán. Quay lại giỏ hàng và chọn
+          sản phẩm bạn muốn mua.
+        </Alert>
+        <Button
+          component={Link}
+          to="/cart"
+          variant="contained"
+          sx={{ alignSelf: "flex-start" }}
+        >
+          Quay lại giỏ hàng
+        </Button>
+      </Stack>
+    );
   return (
     <Stack spacing={3} sx={{ maxWidth: 1200, mx: "auto" }}>
       <Button
@@ -52,11 +110,11 @@ export default function CheckoutPage() {
         </Typography>
       </Box>
       <Alert severity="info">
-        Bản xem trước với 2 sản phẩm mẫu. Thao tác đặt hàng và thanh toán chỉ
-        minh họa giao diện.
+        Bản xem trước với {items.reduce((sum, item) => sum + item.quantity, 0)}{" "}
+        sản phẩm. Thao tác đặt hàng và thanh toán chỉ minh họa giao diện.
       </Alert>
       <Stepper activeStep={step} alternativeLabel sx={{ py: 1 }}>
-        {["Giao hàng", "Thanh toán", "Xác nhận"].map((label) => (
+        {["Giao hàng & thanh toán", "Xác nhận đơn hàng"].map((label) => (
           <Step key={label}>
             <StepLabel>{label}</StepLabel>
           </Step>
@@ -80,13 +138,32 @@ export default function CheckoutPage() {
               spacing={3}
               onSubmit={(event) => {
                 event.preventDefault();
-                if (step < 2) setStep(step + 1);
-                else
+                if (step === 0) setStep(1);
+                else {
+                  const order = prototypeOrders.find(
+                    (item) =>
+                      item.id === (method === "qr" ? "demo-qr" : "demo-cod"),
+                  )!;
                   navigate(
                     method === "qr"
                       ? "/orders/demo-qr/payment"
                       : "/orders/demo-cod/success",
+                    {
+                      state: {
+                        order: {
+                          ...order,
+                          ...quote,
+                          items,
+                          address: {
+                            recipient: address.recipient,
+                            phone: address.phone,
+                            line: address.line,
+                          },
+                        },
+                      },
+                    },
                   );
+                }
               }}
             >
               {step === 0 && (
@@ -203,7 +280,9 @@ export default function CheckoutPage() {
                     }
                     autoComplete="shipping street-address"
                     multiline
-                    minRows={2}
+                    minRows={3}
+                    maxRows={6}
+                    slotProps={{ inputLabel: { shrink: true } }}
                   />
                   <TextField
                     label="Ghi chú giao hàng (không bắt buộc)"
@@ -212,14 +291,16 @@ export default function CheckoutPage() {
                     multiline
                     minRows={2}
                     placeholder="Ví dụ: Gọi trước khi giao hàng"
+                    slotProps={{ inputLabel: { shrink: true } }}
                   />
                   <Alert severity="success" icon={<LocalShippingOutlined />}>
                     Giao hàng tiêu chuẩn · Dự kiến 05–07/10/2026 · 30.000 ₫
                   </Alert>
                 </>
               )}
-              {step === 1 && (
+              {step === 0 && (
                 <>
+                  <Divider />
                   <Typography variant="h2">Phương thức thanh toán</Typography>
                   <FormControl>
                     <FormLabel id="payment-method-label">
@@ -259,10 +340,18 @@ export default function CheckoutPage() {
                           <FormControlLabel
                             value={value}
                             control={<Radio />}
-                            sx={{ m: 0, alignItems: "flex-start" }}
+                            sx={{
+                              m: 0,
+                              alignItems: "flex-start",
+                              width: "100%",
+                            }}
                             label={
                               <Stack spacing={1} sx={{ pt: 1 }}>
-                                <Stack direction="row" spacing={1}>
+                                <Stack
+                                  direction="row"
+                                  spacing={1}
+                                  alignItems="center"
+                                >
                                   <Icon color="primary" />
                                   <Typography fontWeight={600}>
                                     {title}
@@ -296,7 +385,9 @@ export default function CheckoutPage() {
                           variant="outlined"
                         />
                         <Typography variant="body2">
-                          Đã áp dụng · Giảm 100.000 ₫
+                          {discount
+                            ? "Đã áp dụng · Giảm 100.000 ₫"
+                            : "Áp dụng cho đơn từ 1.000.000 ₫"}
                         </Typography>
                       </Stack>
                       <Button
@@ -316,7 +407,7 @@ export default function CheckoutPage() {
                   </Paper>
                 </>
               )}
-              {step === 2 && (
+              {step === 1 && (
                 <>
                   <Typography variant="h2">Kiểm tra đơn hàng</Typography>
                   <Stack spacing={1}>
@@ -350,15 +441,15 @@ export default function CheckoutPage() {
                         : "Chuyển khoản bằng mã QR"}
                     </Typography>
                     <Button
-                      onClick={() => setStep(1)}
+                      onClick={() => setStep(0)}
                       sx={{ alignSelf: "flex-start" }}
                     >
                       Đổi phương thức thanh toán
                     </Button>
                   </Stack>
                   <Alert severity="info">
-                    Thông tin trên dùng để xem bố cục. Nút đặt hàng mở đơn mẫu
-                    có sẵn.
+                    Thông tin dùng để xem trước đơn hàng. Thao tác đặt hàng chỉ
+                    minh họa giao diện.
                   </Alert>
                 </>
               )}
@@ -378,11 +469,7 @@ export default function CheckoutPage() {
                   size="large"
                   sx={{ ml: { sm: "auto" } }}
                 >
-                  {step === 0
-                    ? "Tiếp tục thanh toán"
-                    : step === 1
-                      ? "Kiểm tra đơn hàng"
-                      : "Đặt hàng"}
+                  {step === 0 ? "Kiểm tra đơn hàng" : "Đặt hàng"}
                 </Button>
               </Stack>
             </Stack>
@@ -394,7 +481,7 @@ export default function CheckoutPage() {
             top: tokens.layout.storefrontHeaderHeight + 16,
           }}
         >
-          <CheckoutSummary />
+          <CheckoutSummary items={items} quote={quote} />
         </Box>
       </Box>
     </Stack>

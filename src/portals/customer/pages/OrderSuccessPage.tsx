@@ -1,17 +1,21 @@
 import { Alert, Box, Button, Paper, Stack, Typography } from "@mui/material";
 import CheckCircleOutlineRounded from "@mui/icons-material/CheckCircleOutlineRounded";
-import { Link, useParams, useSearchParams } from "react-router-dom";
-import { prototypeOrders } from "../../../mocks/checkout";
+import {
+  Link,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
+import { findPrototypeOrder } from "../../../mocks/checkout";
 import { EmptyState } from "../../../shared/components/Feedback";
 import { OrderProducts, OrderTotals } from "../components/CheckoutSummary";
 
 export default function OrderSuccessPage() {
   const { id } = useParams();
+  const location = useLocation();
   const [params] = useSearchParams();
-  const order = prototypeOrders.find(
-    (item) => item.id === id && item.userId === "customer-1",
-  );
-  if (!order)
+  const order = findPrototypeOrder(id, location.state);
+  if (!order || order.userId !== "customer-1")
     return (
       <EmptyState
         title="Không tìm thấy đơn mẫu"
@@ -62,6 +66,7 @@ export default function OrderSuccessPage() {
           <Button
             component={Link}
             to={`/account/orders/${order.id}${paid ? "?payment=paid" : ""}`}
+            state={location.state}
             variant="contained"
             fullWidth
           >
@@ -72,7 +77,7 @@ export default function OrderSuccessPage() {
           </Button>
         </Stack>
         <Typography variant="body2" color="text.secondary" textAlign="center">
-          Đây là đơn có sẵn trong prototype; thao tác không tạo đơn mới.
+          Đây là bản xem trước đơn hàng; thao tác không lưu đơn mới.
         </Typography>
       </Stack>
     </Paper>

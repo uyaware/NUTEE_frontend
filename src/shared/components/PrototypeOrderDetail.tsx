@@ -18,8 +18,13 @@ import {
   Typography,
 } from "@mui/material";
 import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
-import { Link, useParams, useSearchParams } from "react-router-dom";
-import { paymentLabels, prototypeOrders } from "../../mocks/checkout";
+import {
+  Link,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
+import { paymentLabels, findPrototypeOrder } from "../../mocks/checkout";
 import { dateTime, money } from "../lib/format";
 import type { Order, Portal } from "../types/database";
 import { StatusBadge } from "./StatusBadge";
@@ -39,6 +44,7 @@ const steps: { status: Order["status"]; label: string }[] = [
 
 export function PrototypeOrderDetail({ portal }: { portal: Portal }) {
   const { id } = useParams();
+  const location = useLocation();
   const [params, setParams] = useSearchParams();
   const [cancelOpen, setCancelOpen] = useState(false);
   const [reason, setReason] = useState(
@@ -46,10 +52,8 @@ export function PrototypeOrderDetail({ portal }: { portal: Portal }) {
   );
   const customer = portal === "customer";
   const orderBase = customer ? "/account/orders" : "/management/orders";
-  const order = prototypeOrders.find(
-    (item) => item.id === id && (!customer || item.userId === "customer-1"),
-  );
-  if (!order)
+  const order = findPrototypeOrder(id, customer ? location.state : null);
+  if (!order || (customer && order.userId !== "customer-1"))
     return (
       <Stack spacing={2}>
         <EmptyState
@@ -236,6 +240,7 @@ export function PrototypeOrderDetail({ portal }: { portal: Portal }) {
                   <Button
                     component={Link}
                     to={`/orders/${order.id}/payment`}
+                    state={location.state}
                     variant="contained"
                   >
                     Thanh toán ngay
@@ -291,7 +296,7 @@ export function PrototypeOrderDetail({ portal }: { portal: Portal }) {
             onClick={() => {
               const next = new URLSearchParams(params);
               next.set("cancelled", "1");
-              setParams(next);
+              setParams(next, { state: location.state });
               setCancelOpen(false);
             }}
           >

@@ -3,6 +3,7 @@ import { createSeed } from "../../mocks/seed";
 import { databaseSchema } from "../../shared/types/database";
 import type { Database, Portal, Session } from "../../shared/types/database";
 import { ServiceError } from "../../shared/lib/errors";
+import { createId } from "../../shared/lib/id";
 import { guestCartSchema } from "../../shared/types/cart";
 import type { GuestCart } from "../../shared/types/cart";
 import type {
@@ -156,7 +157,7 @@ export class LocalStorageRepository
       if (!db.guestCartMerges.some((m) => m.id === parsed.data.id))
         return parsed.data;
     }
-    return { id: crypto.randomUUID(), revision: 0, items: [] };
+    return { id: createId(), revision: 0, items: [] };
   }
   async readGuest() {
     return this.guest(await this.read());

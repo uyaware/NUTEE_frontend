@@ -9,6 +9,7 @@ import { createCatalogService, productSummary } from "./catalog";
 import { belongsToPortal, hasPermission } from "../shared/auth/permissions";
 import type { Permission } from "../shared/auth/permissions";
 import { ServiceError } from "../shared/lib/errors";
+import { createId } from "../shared/lib/id";
 import { DEMO_PASSWORD } from "../mocks/seed";
 import type { Services } from "./contracts";
 import { createCartService, mergeGuestItems } from "./cart";
@@ -95,7 +96,7 @@ export function createServices(
           );
         const db = await repository.read();
         const user: User = {
-          id: crypto.randomUUID(),
+          id: createId(),
           email: parsed.data.email,
           name: "",
           profileCompleted: false,
@@ -109,11 +110,11 @@ export function createServices(
             });
           current.users.push(user);
           current.credentials.push({
-            id: crypto.randomUUID(),
+            id: createId(),
             userId: user.id,
             password: parsed.data.password,
           });
-          current.carts.push({ id: crypto.randomUUID(), userId: user.id });
+          current.carts.push({ id: createId(), userId: user.id });
         });
         return establishSession(user, "customer");
       },
@@ -199,7 +200,7 @@ export function createServices(
                 a.isDefault = false;
               });
             db.addresses.push({
-              id: crypto.randomUUID(),
+              id: createId(),
               userId: user.id,
               recipient: user.name,
               phone: parsed.data.phone,
@@ -272,7 +273,7 @@ export function createServices(
           if (address) Object.assign(address, parsed.data, { isDefault });
           else
             db.addresses.push({
-              id: crypto.randomUUID(),
+              id: createId(),
               userId: user.id,
               ...parsed.data,
               isDefault,
