@@ -94,6 +94,14 @@ export default function CartPage() {
           >
             Khám phá sản phẩm
           </Button>
+          <Button
+            component={Link}
+            to="/checkout"
+            variant="outlined"
+            sx={{ alignSelf: "flex-start" }}
+          >
+            Xem thanh toán mẫu
+          </Button>
         </>
       ) : (
         <Box
@@ -260,6 +268,13 @@ export default function CartPage() {
               )}
               <Button component={Link} to="/products" variant="outlined">
                 Tiếp tục mua sắm
+              </Button>
+              <Button
+                component={Link}
+                to={data.ownerId ? "/checkout" : "/login?returnTo=%2Fcheckout"}
+                variant={data.ownerId ? "contained" : "outlined"}
+              >
+                Tiến hành thanh toán
               </Button>
             </Stack>
           </Paper>

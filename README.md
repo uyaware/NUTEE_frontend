@@ -1,4 +1,4 @@
-# NUTEE frontend — M0–M3
+# NUTEE frontend — M0–M4 prototype
 
 React + Vite + TypeScript strict, Material UI/MUI Icons, TanStack Query, React Hook Form/Zod. Giao diện tiếng Việt, VND; palette xanh/than theo `public/logo_nutee.png`.
 
@@ -19,7 +19,9 @@ Catalog tại `/products`, chi tiết tại `/products/:id`. Tìm theo tên/SKU/
 
 M3: thêm sản phẩm từ trang chi tiết vào `/cart`, tăng/giảm/xóa và lưu giỏ sau reload. Guest chỉ lưu ID sản phẩm/số lượng; login customer gộp với giỏ tài khoản, kiểm tra tồn kho và báo điều chỉnh. Logout giữ giỏ tài khoản; giỏ khách mới rỗng. Hai customer có giỏ riêng; phiên backoffice giữ độc lập.
 
-Tài khoản có navigation hồ sơ/địa chỉ/bảo mật/đơn hàng. `/account/addresses` hỗ trợ thêm/sửa/xóa/chọn mặc định, validation, xác nhận xóa và conflict giữa các tab. `/register` tạo customer demo với mật khẩu chung bên dưới. `/verify-email`, `/forgot-password`, `/reset-password`, `/account/security` là màn hướng dẫn giới hạn auth demo: chưa gửi email, đổi mật khẩu hay OAuth. Checkout/đặt hàng/thanh toán thuộc M4. Xem [nghiệm thu M3](docs/m3-acceptance.md).
+Tài khoản có navigation hồ sơ/địa chỉ/bảo mật/đơn hàng. `/account/addresses` hỗ trợ thêm/sửa/xóa/chọn mặc định, validation, xác nhận xóa và conflict giữa các tab. `/register` tạo customer demo với mật khẩu chung bên dưới. `/verify-email`, `/forgot-password`, `/reset-password`, `/account/security` là màn hướng dẫn giới hạn auth demo: chưa gửi email, đổi mật khẩu hay OAuth. Xem [nghiệm thu M3](docs/m3-acceptance.md).
+
+M4 là prototype theo yêu cầu: `/checkout` có ba bước giao hàng → thanh toán COD/QR → xác nhận với 2 sản phẩm cố định, hai địa chỉ và mã NUTEE100 có sẵn. Nút đặt hàng mở `/orders/demo-cod/success` hoặc `/orders/demo-qr/payment`; màn QR có nút xem trạng thái chờ/thành công/thất bại/hết hạn. `/account/orders` có đơn mẫu, chi tiết, xác nhận hủy và form đánh giá từ đơn đã giao; backoffice hiển thị cùng bộ đơn mẫu. M4 không tạo/lưu đơn, gửi đánh giá, cập nhật giỏ/tồn kho hay xử lý thanh toán. Dữ liệu M4 cố định cho persona Minh Anh, độc lập với tài khoản và giỏ thực tế ở M3. Các route customer vẫn yêu cầu đăng nhập demo. Không thêm hoặc chạy test cho M4. Xem [phạm vi M4](docs/m4-prototype.md).
 
 | Role     | Email               | Mật khẩu demo |
 | -------- | ------------------- | ------------- |
@@ -45,18 +47,6 @@ E2E dùng Chrome đã cài (`channel: chrome`) và tự mở Vite port 4173. N�
 
 `build` tạo `dist/`; preview tại port 4173. Production static hosting cần fallback mọi deep link về `index.html`. Dev/preview là hai origin theo port: dữ liệu demo ở 5173 không tự chuyển sang 4173. Dùng `localhost` nhất quán; địa chỉ IP LAN là origin khác và Web Locks có thể không có trên HTTP LAN.
 
-## Kiểm chứng nền tảng
-
-1. Login customer, sửa tên ở hồ sơ; reload giữ tên. Login backoffice admin cùng trình duyệt: customer vẫn đăng nhập.
-2. Admin mở “Sản phẩm demo”, sửa tên/giá/trạng thái một sản phẩm đầu danh sách. Mở storefront ở tab khác cùng origin: thay đổi cập nhật; reload giữ dữ liệu. Đơn cũ giữ snapshot tên/giá.
-3. Login staff, truy cập thẳng `/management/users` hoặc `/management/products`: 403. Customer xem `/account/orders/order-2` bị service từ chối vì thuộc customer khác.
-4. Logout customer: backoffice vẫn đăng nhập. Mở editor trong hai tab admin; save tab thứ nhất rồi tab thứ hai: conflict, không ghi đè dữ liệu mới.
-5. Nếu đọc DB/giỏ khách gặp lỗi, màn khôi phục cho phép xuất bản sao và “Đặt lại demo” sau xác nhận: seed khôi phục, cả hai phiên xóa; keys của ứng dụng khác giữ nguyên.
-
-Seed 30 products / 6 brands / 12 orders / 4 promotions / 6 after-sales, quan hệ validate khi đọc và ghi. Storage lỗi có màn recovery, giữ raw data, export/retry/reset. Không tự reset dữ liệu khi JSON/schema lỗi hoặc seedVersion đổi.
-
-Seed v2 bổ sung ảnh gallery và RAM/storage/connection mẫu. Dữ liệu seed v1 đã lưu vẫn chạy bình thường, giữ mọi chỉnh sửa. Dùng profile trình duyệt mới để thử seed mới mà vẫn giữ dữ liệu demo ở profile hiện tại. Nghiệm thu M2 xem `docs/m2-acceptance.md`.
-
 ## Tổ chức
 
 - `src/app`: providers/root routing, storage cache invalidation.
@@ -66,5 +56,3 @@ Seed v2 bổ sung ảnh gallery và RAM/storage/connection mẫu. Dữ liệu se
 - `src/repositories/local`: persistence/session adapter, revision, Web Locks, reset/export.
 - `src/mocks`: relational seed và test utilities.
 - `design-system/nutee`: master + catalog/dashboard/checkout overrides.
-
-M1 gồm shell, login/session, guards, seed/persistence/recovery/reset và preview dữ liệu. Profile mutation/product editor là luồng nhỏ để kiểm chứng nền tảng. M2 bổ sung catalog/search/filter/detail/gallery/specs/reviews read. M3 bổ sung account/address/cart/register demo. Checkout, payment, workflow staff và CRUD admin đầy đủ thuộc M4–M6. API thật/M8 chưa triển khai.

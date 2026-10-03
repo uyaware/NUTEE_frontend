@@ -19,6 +19,10 @@ const CartPage = lazy(() => import("./pages/CartPage"));
 const AuthDemoPage = lazy(() => import("./pages/AuthDemoPage"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const ProfileSetupPage = lazy(() => import("./pages/ProfileSetupPage"));
+const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
+const PaymentPage = lazy(() => import("./pages/PaymentPage"));
+const OrderSuccessPage = lazy(() => import("./pages/OrderSuccessPage"));
+const ReviewPage = lazy(() => import("./pages/ReviewPage"));
 export default function CustomerRoutes() {
   return (
     <Routes>
@@ -42,6 +46,9 @@ export default function CustomerRoutes() {
         <Route path="products" element={<CatalogPage />} />
         <Route path="products/:id" element={<ProductDetailPage />} />
         <Route element={<RequireAuth portal="customer" />}>
+          <Route path="checkout" element={<CheckoutPage />} />
+          <Route path="orders/:id/payment" element={<PaymentPage />} />
+          <Route path="orders/:id/success" element={<OrderSuccessPage />} />
           <Route path="account/setup" element={<ProfileSetupPage />} />
           <Route element={<AccountLayout />}>
             <Route
@@ -67,6 +74,10 @@ export default function CustomerRoutes() {
             <Route
               path="account/orders/:id"
               element={<OrderDetailPage portal="customer" />}
+            />
+            <Route
+              path="account/orders/:id/review/:itemId"
+              element={<ReviewPage />}
             />
           </Route>
         </Route>

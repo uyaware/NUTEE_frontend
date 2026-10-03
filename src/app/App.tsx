@@ -21,6 +21,8 @@ const CustomerRoutes = lazy(() => import("../portals/customer/routes"));
 const BackofficeRoutes = lazy(() => import("../portals/backoffice/routes"));
 const customerTitles: Record<string, string> = {
   "/cart": "Giỏ hàng",
+  "/checkout": "Thanh toán",
+  "/account/orders": "Đơn hàng của bạn",
   "/account/addresses": "Địa chỉ giao hàng",
   "/account/security": "Bảo mật tài khoản",
   "/account/setup": "Hoàn thiện thông tin",
@@ -71,9 +73,15 @@ export default function App() {
                 ? "Chi tiết sản phẩm"
                 : location.pathname.includes("profile")
                   ? "Tài khoản"
-                  : location.pathname.includes("orders")
-                    ? "Đơn hàng"
-                    : "Cửa hàng";
+                  : location.pathname.endsWith("/payment")
+                    ? "Thanh toán QR"
+                    : location.pathname.endsWith("/success")
+                      ? "Xác nhận đơn hàng"
+                      : location.pathname.includes("/review/")
+                        ? "Đánh giá sản phẩm"
+                        : location.pathname.includes("orders")
+                          ? "Đơn hàng"
+                          : "Cửa hàng";
     if (!location.pathname.startsWith("/products/"))
       document.title = `NUTEE · ${customerTitles[location.pathname] ?? name}`;
     document.getElementById("main-content")?.focus({ preventScroll: true });
